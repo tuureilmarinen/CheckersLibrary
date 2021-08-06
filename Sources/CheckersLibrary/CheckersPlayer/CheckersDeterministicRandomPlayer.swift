@@ -30,9 +30,9 @@ public struct CheckersDeterministicRandomPlayer: CheckersPlayer {
         }
         let sorted=Array(options).sorted(by: arbitarySorter)
         let distance=UInt64(sorted.distance(from: sorted.startIndex, to: sorted.endIndex))
-        let a=state.blackMen ^ state.blackMen.byteSwapped ^ state.blackKings.byteSwapped ^ state.whiteMen.byteSwapped ^ state.whiteKings.byteSwapped / seed
-        let selectedIndex = Int((state.blackTurn ? a : ~a)%distance)
-        print("dist: \(distance) sel:\(selectedIndex) \(a)")
+        let bitsJustCrammedTogether=state.blackMen ^ state.blackMen.byteSwapped ^ state.blackKings.byteSwapped ^ state.whiteMen.byteSwapped ^ state.whiteKings.byteSwapped / seed
+        let selectedIndex = Int((state.blackTurn ? bitsJustCrammedTogether : ~bitsJustCrammedTogether)%distance)
+        print("dist: \(distance) sel:\(selectedIndex) \(bitsJustCrammedTogether)")
         return sorted[selectedIndex]
     }
 }

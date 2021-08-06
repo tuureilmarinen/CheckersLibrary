@@ -16,8 +16,8 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
         for _ in 0..<totalGames {
             let rand=CheckersRandomPlayer()
             let minmax=CheckersMinMax()
-            var state:GameState?=GameState.defaultStart
-            
+            var state: GameState?=GameState.defaultStart
+
             repeat {
                 state=minmax.provideMove(state!)
                 guard state != nil else {
@@ -31,6 +31,6 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
     }
 
     static var allTests = [
-        ("testPerformance", testPerformance),
+        ("testPerformance", testPerformance)
     ]
 }

@@ -9,6 +9,6 @@ import Foundation
 
 public protocol CheckersPlayer {
     func provideMove(_ state: GameState) -> GameState?
-    var name:String {get}
+    var name: String {get}
     init()
 }

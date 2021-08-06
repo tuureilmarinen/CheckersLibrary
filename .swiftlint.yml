@@ -1,0 +1,4 @@
+reporter: "xcode"
+disabled_rules:
+  - identifier_name
+  - type_body_length
