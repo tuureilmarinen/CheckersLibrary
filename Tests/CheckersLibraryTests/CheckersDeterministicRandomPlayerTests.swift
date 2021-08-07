@@ -15,7 +15,7 @@ final class CheckersDeterministicRandomPlayerTests: XCTestCase {
         var sameseedA=CheckersDeterministicRandomPlayer()
         var sameseedB=CheckersDeterministicRandomPlayer()
         var differentSeed=CheckersDeterministicRandomPlayer()
-        differentSeed.seed=UInt64.max/2
+        differentSeed.seed=10290569611181436143
         sameseedA.seed=9001
         sameseedB.seed=sameseedA.seed
         var gameState = GameState.defaultStart
@@ -26,7 +26,7 @@ final class CheckersDeterministicRandomPlayerTests: XCTestCase {
                 break
             }
             XCTAssertEqual(sameseedA.provideMove(gameState), sameseedB.provideMove(gameState))
-            if gameState.children.count>1 && sameseedA.provideMove(gameState)==differentSeed.provideMove(gameState) {
+            if gameState.children.count>2 && sameseedA.provideMove(gameState)==differentSeed.provideMove(gameState) {
                 equalResultCounter+=1
             }
             totalCounter+=1

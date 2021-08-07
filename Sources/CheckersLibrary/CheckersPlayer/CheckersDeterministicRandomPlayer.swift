@@ -37,7 +37,6 @@ public struct CheckersDeterministicRandomPlayer: CheckersPlayer {
             state.whiteKings.byteSwapped /
             seed
         let selectedIndex = Int((state.blackTurn ? bitsJustCrammedTogether : ~bitsJustCrammedTogether)%distance)
-        print("dist: \(distance) sel:\(selectedIndex) \(bitsJustCrammedTogether)")
         return sorted[selectedIndex]
     }
 }
