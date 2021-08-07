@@ -18,7 +18,7 @@ final class GameStateTestsTests: XCTestCase {
             state=children.randomElement()!
             XCTAssertEqual(state.allPieces & ~GameState.darkSquares, UInt64(0))
         }
-        XCTAssertEqual(CheckersUtils.getMaskIndexes(UInt64(0b101)), [0, 2])
+        XCTAssertEqual(CheckersUtils.getSetBitIndexes(UInt64(0b101)), [0, 2])
     }
     func testPieceCount() {
         var state = GameState.defaultStart

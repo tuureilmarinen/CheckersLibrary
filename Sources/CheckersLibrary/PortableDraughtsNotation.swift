@@ -60,7 +60,10 @@ public enum PortableDraughtsNotation {
         func parseNumberKing(_ pieceString: String) -> (Bool, Int) {
             if pieceString.prefix(1)=="K" || pieceString.prefix(1)=="k" {
                 return (Bool(true),
-                        Int(String(pieceString[pieceString.index(pieceString.startIndex, offsetBy: 1)..<pieceString.endIndex]))!)
+                        Int(String(
+                                pieceString[pieceString.index(pieceString.startIndex,
+                                                              offsetBy: 1)..<pieceString.endIndex])
+                        )!)
             }
             return (Bool(false), Int(pieceString)!)
 
@@ -75,9 +78,16 @@ public enum PortableDraughtsNotation {
         let bitboardsA = bitboards(String(piecesA[piecesA.index(piecesA.startIndex, offsetBy: 1)..<piecesA.endIndex]))
         let bitboardsB = bitboards(String(piecesB[piecesB.index(piecesB.startIndex, offsetBy: 1)..<piecesB.endIndex]))
 
-        let ((blackMen, blackKings), (whiteMen, whiteKings)) = piecesA.prefix(1)=="B" || piecesA.prefix(1)=="b" ? (bitboardsA, bitboardsB) : (bitboardsB, bitboardsA)
+        let ((blackMen, blackKings), (whiteMen, whiteKings)) = piecesA.prefix(1)=="B" || piecesA.prefix(1)=="b" ?
+            (bitboardsA, bitboardsB) :
+            (bitboardsB, bitboardsA)
 
-        return GameState(blackMen: blackMen, blackKings: blackKings, whiteMen: whiteMen, whiteKings: whiteKings, blackTurn: blackTurn)
+        return GameState(
+            blackMen: blackMen,
+            blackKings: blackKings,
+            whiteMen: whiteMen,
+            whiteKings: whiteKings,
+            blackTurn: blackTurn)
     }
 
 }

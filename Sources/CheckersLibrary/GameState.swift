@@ -34,8 +34,16 @@ struct CheckersCaptureDiff {
 let legalJumpDirections: [CheckersPiece: [(Int, Int)]] = [
     .BlackMan: [CheckersCaptureDiff.DownLeft, CheckersCaptureDiff.DownRight],
     .WhiteMan: [CheckersCaptureDiff.UpLeft, CheckersCaptureDiff.UpRight],
-    .BlackKing: [CheckersCaptureDiff.DownLeft, CheckersCaptureDiff.DownRight, CheckersCaptureDiff.UpLeft, CheckersCaptureDiff.UpRight],
-    .WhiteKing: [CheckersCaptureDiff.DownLeft, CheckersCaptureDiff.DownRight, CheckersCaptureDiff.UpLeft, CheckersCaptureDiff.UpRight]
+    .BlackKing: [
+        CheckersCaptureDiff.DownLeft,
+        CheckersCaptureDiff.DownRight,
+        CheckersCaptureDiff.UpLeft,
+        CheckersCaptureDiff.UpRight],
+    .WhiteKing: [
+        CheckersCaptureDiff.DownLeft,
+        CheckersCaptureDiff.DownRight,
+        CheckersCaptureDiff.UpLeft,
+        CheckersCaptureDiff.UpRight]
 ]
 
 let CheckersDiff = (move: (
@@ -56,7 +64,8 @@ let CheckersDiff = (move: (
 /// GameState contains state of the board.
 /// It provides a way to get all legal moves from certain state.
 public struct GameState: Hashable {
-    /// The state of the board is represented by a bitboard. Bit at the least significant position represents square at the leftmost square on the topmost square.
+    /// The state of the board is represented by a bitboard.
+    /// Bit at the least significant position represents square at the leftmost square on the topmost square.
     /// - Parameters:
     ///   - blackMen: Bitboard of the black men on the board.
     ///   - blackKings: Bitboard of the black men on the board.
@@ -85,20 +94,30 @@ public struct GameState: Hashable {
         _1111_1111 */
     public static let edges: UInt64 = 18411139144890810879
 
-    // ~edges
+    /// ~edges
     public static let notEdges: UInt64 = 35604928818740736
 
-    public static let rightEdge: UInt64 = 0b1000_0000_1000_0000_1000_0000_1000_0000_1000_0000_1000_0000_1000_0000_1000_0000
+    /* 0b
+    / 1000_0000_
+    1000_0000_
+    1000_0000_
+    1000_0000_
+    1000_0000_
+    1000_0000_
+    1000_0000_
+    1000_0000 */
+    public static let rightEdge: UInt64 = 9259542123273814144
 
-    public static let leftEdge: UInt64 = 0b0000_0001_0000_0001_0000_0001_0000_0001_0000_0001_0000_0001_0000_0001_0000_0001
-    /*0b0000_0001
-    _0000_0001
-    _0000_0001
-    _0000_0001
-    _0000_0001
-    _0000_0001
-    _0000_0001
-    _0000_0001*/
+    /* 0b
+     0000_0001_
+     0000_0001_
+     0000_0001_
+     0000_0001_
+     0000_0001_
+     0000_0001_
+     0000_0001_
+     0000_0001 */
+    public static let leftEdge: UInt64 = 72340172838076673
 
     // 0b1111_1111_0000...
     public static let whiteEndMask: UInt64 = 18374686479671623680
@@ -124,10 +143,14 @@ public struct GameState: Hashable {
     /// ie. dark squares
     public static let playableSquares: UInt64 = 6172840429334713770
 
-    // normal starting position
-    // whiteMen = darkSquares & ~(UInt64.max>>16) = 6172746239264686080 = 0b101_0101_1010_1010_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000
-    // blackMen = darkSquares & ~(UInt64.max<<16) = 21930 = 0b0000_0000_..._0101_0101_1010_1010
-    // blackKings=whiteKings=0
+    /*
+     normal starting position
+     whiteMen = darkSquares & ~(UInt64.max>>16)
+     = 6172746239264686080 =
+     0b101_0101_1010_1010_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000
+     blackMen = darkSquares & ~(UInt64.max<<16) = 21930 = 0b0000_0000_..._0101_0101_1010_1010
+     blackKings=whiteKings=0
+    */
     public static let defaultStart = GameState(
         blackMen: 0b101_0101_1010_1010,
         blackKings: 0,
@@ -270,7 +293,8 @@ public struct GameState: Hashable {
     /// Provides mask of pieces of certain type that can move to certain direction.
     /// - Parameters:
     ///   - movablePieces: the pieces that are moved. Only one type of pieces can be provided.
-    ///   - nonMovablePieces: all other pieces. Eg. if movablePieces is blackMen, nonMovablePieces is blackKings|whitePieces
+    ///   - nonMovablePieces: all other pieces.
+    ///   Eg. if movablePieces is blackMen, nonMovablePieces is blackKings|whitePieces
     ///   - direction: the direction in which move is made.
     /// - Returns: Mask of pieces that can be moved to specified direction.
     func getMoveMask(_ movablePieces: UInt64, _ nonMovablePieces: UInt64, _ direction: CheckersMoveDiff) -> UInt64 {
@@ -278,10 +302,12 @@ public struct GameState: Hashable {
         return (movablePieces<<diff & (~(((movablePieces|nonMovablePieces)))))>>diff
     }
 
-    /// Provides mask of the movable pieces that can capture one of the capturable pieces and then land to a unoccupied square.
+    /// Provides mask of the movable pieces that can capture one of the capturable pieces
+    /// and then land to a unoccupied square.
     /// - Parameters:
-    ///   - movablePieces: bitboard of movable pieces
-    ///   - nonCapturablePieces: the pieces that cannot be captured. Usually the kings of same color when moving men etc.
+    ///   - movablePieces: Bitboard of movable pieces.
+    ///   - nonCapturablePieces: the pieces that cannot be captured nor moved.
+    ///   Usually the kings of same color when moving men etc.
     ///   - capturablePieces: The pieces that can be captured. Ie. all enemy pieces.
     ///   - direction: Tuple containing difference to capturable piece and then difference to square to go after capture
     /// - Returns: <#description#>
@@ -292,7 +318,8 @@ public struct GameState: Hashable {
     ) -> UInt64 {
         // move direction is relative to the captured piece, not to the original position
         let (captureDiff, postCaptureDiff) = direction
-        return movablePieces & ((capturablePieces & GameState.notEdges)>>captureDiff) & ~((allPieces>>postCaptureDiff)>>captureDiff)
+        return movablePieces &
+            ((capturablePieces & GameState.notEdges)>>captureDiff) & ~((allPieces>>postCaptureDiff)>>captureDiff)
     }
 
     func capturePieces(
@@ -377,7 +404,7 @@ public struct GameState: Hashable {
             }
 
         default:
-            _=1^1
+            break
         }
     }
 
@@ -523,7 +550,11 @@ public struct GameState: Hashable {
             let foundChainedCaptureStep=((piecesToMove & (~from)) | to,
                    capturableMen & ~captureMask,
                    capturableKings & ~captureMask)
-            let foundChainedCaptures = checkForChainedCaptures(pos+moveDiff, foundChainedCaptureStep.0, foundChainedCaptureStep.1, foundChainedCaptureStep.2)
+            let foundChainedCaptures = checkForChainedCaptures(
+                pos+moveDiff,
+                foundChainedCaptureStep.0,
+                foundChainedCaptureStep.1,
+                foundChainedCaptureStep.2)
             return foundChainedCaptures ? chainedCaptures.removeFirst() : foundChainedCaptureStep
         }
 
@@ -544,7 +575,11 @@ public struct GameState: Hashable {
                         var newMovablePieces=movablePieces
                         newMovablePieces[pos+moveDiff+captureDiff]=true
                         newMovablePieces[pos]=false
-                        let foundMoreChainedCaptures = checkForChainedCaptures(pos+moveDiff+captureDiff, newMovablePieces, newOpponentMen, opponentKings)
+                        let foundMoreChainedCaptures = checkForChainedCaptures(
+                            pos+moveDiff+captureDiff,
+                            newMovablePieces,
+                            newOpponentMen,
+                            opponentKings)
                         if !foundMoreChainedCaptures {
                             self.chainedCaptures.append((newMovablePieces, newOpponentMen, opponentKings))
                             foundChainedCaptures=true
@@ -557,8 +592,16 @@ public struct GameState: Hashable {
                         var newMovalbePieces=movablePieces
                         newMovalbePieces[pos+moveDiff+captureDiff]=true
                         newMovalbePieces[pos]=false
-                        foundChainedCaptures=foundChainedCaptures||checkForChainedCaptures(pos+moveDiff+captureDiff, newMovalbePieces, opponentMen, newOpponentKings)
-                        let foundMoreChainedCaptures = checkForChainedCaptures(pos+moveDiff+captureDiff, newMovalbePieces, opponentMen, newOpponentKings)
+                        foundChainedCaptures=foundChainedCaptures||checkForChainedCaptures(
+                            pos+moveDiff+captureDiff,
+                            newMovalbePieces,
+                            opponentMen,
+                            newOpponentKings)
+                        let foundMoreChainedCaptures = checkForChainedCaptures(
+                            pos+moveDiff+captureDiff,
+                            newMovalbePieces,
+                            opponentMen,
+                            newOpponentKings)
                         if !foundMoreChainedCaptures {
                             self.chainedCaptures.append((newMovalbePieces, opponentMen, newOpponentKings))
                             foundChainedCaptures=true

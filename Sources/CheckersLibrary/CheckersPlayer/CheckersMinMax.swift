@@ -51,7 +51,8 @@ public class CheckersMinMax: CheckersPlayer {
     public var evaluator: MinMaxHeuristicEvaluator.Type = PieceCountRatioEvaluator.self
 
     public var name: String {
-        return "Min-Max with alpha-beta pruning. Search dept: \(initialSearchDepth), cache depth: \(goodEnoughSearchDepth)"
+        return "Min-Max with alpha-beta pruning. " +
+            "Search dept: \(initialSearchDepth), cache depth: \(goodEnoughSearchDepth)"
     }
 
     required public init() {}
@@ -86,8 +87,15 @@ public class CheckersMinMax: CheckersPlayer {
     ///   - depth: Maximum search depth.
     ///   - alpha: alpha is the minimum value that is guaranteed to the maximizing player, white.
     ///   - beta: beta is the maximum value that is guaranteed to the minimizing player, black.
-    /// - Returns: Double. If value is positive infinity, white can force win, if negative infinity, black can force win. Values that are not infinite, are approximations.
-    private func minMaxWithAlphaBeta (state: GameState, depth: Int, alpha: Double, beta: Double, evaluator: MinMaxHeuristicEvaluator.Type) -> Double {
+    /// - Returns: If value is positive infinity, white can force win, if negative infinity, black can force win.
+    /// Values that are not infinite, are approximations.
+    private func minMaxWithAlphaBeta (
+        state: GameState,
+        depth: Int,
+        alpha: Double,
+        beta: Double,
+        evaluator: MinMaxHeuristicEvaluator.Type
+    ) -> Double {
         var alpha=alpha
         var beta=beta
         let children = state.children
@@ -97,27 +105,23 @@ public class CheckersMinMax: CheckersPlayer {
                     || knownValues[state]!.magnitude==Double.infinity) {
             return knownValues[state]!
         }
-
         // White win = max, black win =min
-        if children.isEmpty {
-            if state.blackTurn {
-                return Double.infinity
-            } else {
-                return -Double.infinity
-            }
-        }
-        guard knownValues[state] == nil else { return knownValues[state]! }
-
-        if depth==0 {
+        else if children.isEmpty {
+            return state.blackTurn ? Double.infinity : -Double.infinity
+        } else if depth==0 {
             return PieceCountRatioEvaluator.evaluate(state)
-
         }
 
         if state.whiteTurn { // white turn -> maximizing
             var highestFoundValue = -Double.infinity
             var highestChild: GameState = children.first!
             for child in children {
-                let childValue = minMaxWithAlphaBeta(state: child, depth: depth-1, alpha: alpha, beta: beta, evaluator: evaluator)
+                let childValue = minMaxWithAlphaBeta(
+                    state: child,
+                    depth: depth-1,
+                    alpha: alpha,
+                    beta: beta,
+                    evaluator: evaluator)
                 if childValue>=highestFoundValue {
                     highestFoundValue = childValue
                     highestChild = child
@@ -133,7 +137,12 @@ public class CheckersMinMax: CheckersPlayer {
             var smallestFoundValue = Double.infinity
             var smallestChild: GameState=children.first!
             for child in children {
-                let childValue = minMaxWithAlphaBeta(state: child, depth: depth-1, alpha: alpha, beta: beta, evaluator: evaluator)
+                let childValue = minMaxWithAlphaBeta(
+                    state: child,
+                    depth: depth-1,
+                    alpha: alpha,
+                    beta: beta,
+                    evaluator: evaluator)
                 if childValue<=smallestFoundValue {
                     smallestFoundValue = childValue
                     smallestChild=child

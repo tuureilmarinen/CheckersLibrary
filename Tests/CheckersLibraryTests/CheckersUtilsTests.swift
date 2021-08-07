@@ -11,7 +11,7 @@ import XCTest
 final class CheckersUtilsTests: XCTestCase {
 
     func testMaskIndexes() {
-        XCTAssertEqual(CheckersUtils.getMaskIndexes(UInt64(0b101)), [0, 2])
+        XCTAssertEqual(CheckersUtils.getSetBitIndexes(UInt64(0b101)), [0, 2])
     }
 
     static var allTests = [

@@ -7,33 +7,46 @@
 
 import Foundation
 
+public struct CheckersMove {
+    public let from: Int
+    public let to: Int
+    public let captured: [Int]
+    public let previous: GameState
+    public let next: GameState?
+}
+
 public enum CheckersUtils {
 
-    public static func getMove(_ previousState: GameState, _ newState: GameState) -> (Int, Int, [Int]) {
+    public static func getMove(_ previousState: GameState, _ newState: GameState) -> CheckersMove {
         let (prev, curr, opp) = newState.blackTurn ?
             (previousState.whitePieces, newState.whitePieces, previousState.blackPieces^newState.blackPieces) :
             (previousState.blackPieces, newState.blackPieces, previousState.whitePieces^newState.whitePieces)
         let from = ((prev^curr)&prev).trailingZeroBitCount
         let to = ((prev^curr)&curr).trailingZeroBitCount
-        return (from, to, getMaskIndexes(opp))
+        return CheckersMove(
+            from: from,
+            to: to,
+            captured: getSetBitIndexes(opp),
+            previous: previousState,
+            next: newState)
     }
 
-    public static func getMoves(_ state: GameState) -> [Int: [(to: Int, captured: [Int], state: GameState)]] {
-        var foundMoves: [Int: [(Int, [Int], GameState)]]=[:]
+    public static func getMoves(_ state: GameState) -> [Int: [CheckersMove]] {
+        var foundMoves: [Int: [CheckersMove]] = [:]
         for child in state.children {
-            let (from, to, captured) = getMove(state, child)
-            if foundMoves[from] != nil {
-                var foundMovesForSinglePiece = foundMoves[from]!
-                foundMovesForSinglePiece.append((to, captured, child))
-                foundMoves[from]=foundMovesForSinglePiece
+            let move = getMove(state, child)
+            if foundMoves[move.from] != nil {
+                var foundMovesForSinglePiece = foundMoves[move.from]!
+                foundMovesForSinglePiece.append(move)
+                foundMoves[move.from]=foundMovesForSinglePiece
             } else {
-                foundMoves[from]=[(to, captured, child)]
+                foundMoves[move.from]=[move]
             }
         }
         return foundMoves
     }
 
-    public static func getMaskIndexes(_ mask: UInt64) -> [Int] {
+    public static func getSetBitIndexes(_ mask: UInt64) -> [Int] {
         var setBitIndexes: [Int] = []
         var mask = mask
         repeat {

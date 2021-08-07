@@ -12,7 +12,3 @@ extension UInt64 {
         }
     }
 }
-
-/*struct CheckersLibrary {
-    var text = "Hello, World!"
-}*/

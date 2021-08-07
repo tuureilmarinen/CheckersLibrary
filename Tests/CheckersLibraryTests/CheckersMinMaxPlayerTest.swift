@@ -27,7 +27,10 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
                 state=rand.provideMove(state!)
             } while state != nil
         }
-        XCTAssertLessThan(Double(lostGames)/Double(totalGames), 0.2, "MinMax with alpha-beta pruning should not lose more than 20% of games against a player making completely random moves.")
+        XCTAssertLessThan(
+            Double(lostGames)/Double(totalGames),
+            0.2,
+            "Player should not lose more than 20% of games against a player making random moves.")
     }
 
     static var allTests = [
