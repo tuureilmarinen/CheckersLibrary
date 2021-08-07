@@ -1,0 +1,12 @@
+language: swift
+os: osx
+osx_image: xcode12.5
+
+before_script:
+  - brew install swiftlint 
+script:
+  - swift build
+  - swift test --enable-code-coverage
+  - xcrun llvm-cov export -format="lcov" .build/debug/CheckersLibraryPackageTests.xctest/Contents/MacOS/CheckersLibraryPackageTests -instr-profile .build/debug/codecov/default.profdata > info.lcov
+  - swiftlint
+  - bash <(curl https://codecov.io/bash)
