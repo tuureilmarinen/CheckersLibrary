@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// CheckersDeterministicRandomPlayer makes always a same move from same state of the game if the seed is same.
 public struct CheckersDeterministicRandomPlayer: CheckersPlayer {
     public var name: String {
         return "DeterministicRandom (seed:\(seed))"

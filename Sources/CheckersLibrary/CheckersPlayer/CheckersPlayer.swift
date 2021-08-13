@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  CheckersPlayer.swift
 //  CheckersLibrary
 //
 //  Created by Tuure Ilmarinen on 28.7.2021.
