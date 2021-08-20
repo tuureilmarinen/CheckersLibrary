@@ -13,10 +13,11 @@ final class GameStateTestsTests: XCTestCase {
     /// Tests if pieces stay in the squares playable in the english draughts.
     func testPiecesShouldStayInDarkSquares() {
         var state = GameState.defaultStart
+        let player = CheckersDeterministicRandomPlayer()
         for _ in 0..<100 {
             let children = state.children
             guard !children.isEmpty else { break }
-            state=children.randomElement()!
+            state=player.provideMove(state)!
             XCTAssertEqual(state.allPieces & ~GameState.darkSquares, UInt64(0))
         }
         XCTAssertEqual(CheckersUtils.getSetBitIndexes(UInt64(0b101)), [0, 2])
@@ -29,9 +30,19 @@ final class GameStateTestsTests: XCTestCase {
     func testPieceCount() {
         var state = GameState.defaultStart
         var newState: GameState?
+        let player = CheckersDeterministicRandomPlayer()
         for _ in 0..<100 {
-            newState=state.children.randomElement()
+            newState=player.provideMove(state)
             guard newState != nil else { break }
+            XCTAssertEqual(
+                newState!.whiteMen | newState!.whiteKings | newState!.blackMen | newState!.blackKings,
+                newState!.whiteMen ^ newState!.whiteKings ^ newState!.blackMen ^ newState!.blackKings,
+                "Pieces should not overlap" +
+                            PortableDraughtsNotation.stateToFen(state) + " -> " +
+                            PortableDraughtsNotation.stateToFen(newState!))
+            XCTAssertEqual(newState!.allPieces & (~GameState.darkSquares), UInt64(0), "Pieces should stay in playable squares." +
+                            PortableDraughtsNotation.stateToFen(state) + " -> " +
+                            PortableDraughtsNotation.stateToFen(newState!))
             XCTAssertLessThanOrEqual(
                 newState!.blackMen.nonzeroBitCount,
                 state.blackMen.nonzeroBitCount,
@@ -39,11 +50,16 @@ final class GameStateTestsTests: XCTestCase {
             XCTAssertLessThanOrEqual(
                 newState!.whiteMen.nonzeroBitCount,
                 state.whiteMen.nonzeroBitCount,
-                "Number of white men should not increase.")
+                "Number of white men should not increase. " +
+                    PortableDraughtsNotation.stateToFen(state) + " -> " +
+                    PortableDraughtsNotation.stateToFen(newState!)
+                )
             XCTAssertEqual(
                 state.whiteTurn ? newState!.whitePieces.nonzeroBitCount : newState!.blackPieces.nonzeroBitCount,
                 state.whiteTurn ? state.whitePieces.nonzeroBitCount : state.blackPieces.nonzeroBitCount,
-                "Player should not lose any pieces during his own turn.")
+                "Player should not lose any pieces during his own turn." +
+                    PortableDraughtsNotation.stateToFen(state) + " -> " +
+                    PortableDraughtsNotation.stateToFen(newState!))
             XCTAssertLessThanOrEqual(
                 state.blackTurn ? newState!.whiteKings.nonzeroBitCount : newState!.blackKings.nonzeroBitCount,
                 state.blackTurn ? state.whiteKings.nonzeroBitCount : state.blackKings.nonzeroBitCount,
