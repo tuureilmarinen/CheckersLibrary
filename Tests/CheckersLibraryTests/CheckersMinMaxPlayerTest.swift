@@ -9,7 +9,7 @@ import XCTest
 @testable import CheckersLibrary
 
 final class CheckersMinMaxPlayerTests: XCTestCase {
-    
+
     /// Tests that the MinMax-algorithm preforms significantly better than a player making completely random moves.
     /// MinMaxPlayer should win at least 80% percent of games.
     func testPerformance() {
@@ -29,7 +29,7 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
                 }
                 state=rand.provideMove(state!)
                 guard state != nil else { break }
-                
+
             }
         }
         XCTAssertLessThan(
@@ -57,15 +57,15 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
             }
         }
     }
-    
+
     /// Tests wheter player wins from state from which it can force win.
     func testMinMaxWinsIfWinCanForcedInSearchDepth() {
-        let whiteCanForceWinInXTurns = PortableDraughtsNotation.PDNfenToGameState(
+        let whiteCanForceWinInFourTurns = PortableDraughtsNotation.PDNfenToGameState(
             "W:BK2:WK10,K22,K23")
         let black=CheckersMinMax()
         let white=black
-        var blackMove :GameState? = whiteCanForceWinInXTurns
-        var whiteMove :GameState?
+        var blackMove: GameState? = whiteCanForceWinInFourTurns
+        var whiteMove: GameState?
         for _ in 0...15 {
             whiteMove = white.provideMove(blackMove!)
             XCTAssertNotNil(whiteMove, "White player should not lose from a state from which it can force win within searchdepth.")
