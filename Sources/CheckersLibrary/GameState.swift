@@ -192,11 +192,30 @@ public struct GameState: Hashable {
     }
 
     /// Contains all legal states the current turn can lead to.
+    /// Property is calculated.
+    /// Complexity is O(n), where n is number of pieces which are able to move or capture.
+    /// Pieces that are unable to move do not affect the complexity.
+    ///
+    /// The possible moves are calculated simultaneously as all pieces of the same type are stored in single variable.
+    /// Movable pieces are determined by
+    /// - ANDing them with not edge depending on the intented move direction
+    /// - shifting bits in variable to left or right by 7 or 9
+    /// - preforming AND operation on NOT allPieces.
+    /// Result has a mask of pieces that can move in specified direction.
+    /// For each set bit a new state is created moving that specific piece.
+    /// Complexity of moving pieces is O(n), where n is the count of set bits.
+    /// Captures are determined in a similar way as the moves, except
+    ///  - AND operation is instead preformed on opponentPieces instead of not allPieces
+    ///  - AND-operation is preformed with notEdges.
+    ///  - After that bits are shifted in same direction and by same offset as in the first step.
+    ///  - Result has a mask of pieces that can capture pieces in that direction, which is then iterated in O(n) time, whre n is number of set bits.
+    /// Piece is then checked, if it can preform another capture in O(a^b) time, where a is average count of directions in which piece can keep jumping.
+    /// For kings: 0 <= a <= 3. For men 0<=a<=2. 0<b<16. However a and b are usually low 0 or 1.
     public var children: Set<GameState> {
         var children: Set<GameState> = []
         var mask: UInt64
         if blackTurn {
-            // . Men Capture
+            // BlackMen Capture
             mask = getCaptureMask(blackMen, blackKings|whitePieces, whitePieces, CheckersDiff.capture.down.left)
             capturePieces(.BlackMan, mask, CheckersDiff.capture.down.left, &children)
 

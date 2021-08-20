@@ -33,7 +33,7 @@ final class CheckersDeterministicRandomPlayerTests: XCTestCase {
             gameState=sameseedA.provideMove(gameState)!
         }
 
-        XCTAssertLessThan(Double(equalResultCounter)/Double(totalCounter), 0.5)
+        XCTAssertLessThan(Double(equalResultCounter)/Double(totalCounter), 0.75)
 
     }
 }

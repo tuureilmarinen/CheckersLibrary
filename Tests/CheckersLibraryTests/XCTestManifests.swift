@@ -7,7 +7,6 @@ public func allTests() -> [XCTestCaseEntry] {
         testCase(CheckersUtilsTests.allTests),
         testCase(GameStateTestsTests),
         testCase(CheckersMinMaxPlayerTests)
-
     ]
 }
 #endif

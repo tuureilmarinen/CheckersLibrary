@@ -20,13 +20,17 @@ final class PortableDraughtsNotationTests: XCTestCase {
         whiteKings: 0b100000,
         blackTurn: false)
 
+    /// Tests if state of the board is parsed correctly from FEN-string.
     func testFentoState() {
         XCTAssertEqual(PortableDraughtsNotation.PDNfenToGameState(fenA), gameStateA)
+    }
+    /// Tests if state of the board is encoded correctly into FEN-string.
+    func testStatetoFen() {
         XCTAssertEqual(PortableDraughtsNotation.stateToFen(gameStateA), fenA)
-
     }
 
     static var allTests = [
-        ("testFentoState", testFentoState)
+        ("testFentoState", testFentoState),
+        ("testStatetoFen", testStatetoFen)
     ]
 }

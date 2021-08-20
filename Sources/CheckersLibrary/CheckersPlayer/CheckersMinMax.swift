@@ -73,8 +73,8 @@ public class CheckersMinMax: CheckersPlayer {
         _ = minMaxWithAlphaBeta(
             state: state,
             depth: self.initialSearchDepth,
-            alpha: -.infinity,
-            beta: .infinity,
+            alpha: -Double.infinity,
+            beta: Double.infinity,
             evaluator: evaluator)
         return optimalKnownMove[state]
     }
