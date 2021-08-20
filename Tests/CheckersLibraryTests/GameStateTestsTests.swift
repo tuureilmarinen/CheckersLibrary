@@ -40,7 +40,9 @@ final class GameStateTestsTests: XCTestCase {
                 "Pieces should not overlap" +
                             PortableDraughtsNotation.stateToFen(state) + " -> " +
                             PortableDraughtsNotation.stateToFen(newState!))
-            XCTAssertEqual(newState!.allPieces & (~GameState.darkSquares), UInt64(0), "Pieces should stay in playable squares." +
+            XCTAssertEqual(newState!.allPieces & (~GameState.darkSquares),
+                           UInt64(0),
+                           "Pieces should stay in playable squares." +
                             PortableDraughtsNotation.stateToFen(state) + " -> " +
                             PortableDraughtsNotation.stateToFen(newState!))
             XCTAssertLessThanOrEqual(

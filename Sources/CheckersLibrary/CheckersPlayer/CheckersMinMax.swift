@@ -11,7 +11,7 @@ public class CheckersMinMax: CheckersPlayer {
 
     private var currentState: GameState!
 
-    /// when key state has black turn, value state has smallest possible value
+    /// When key state has black turn, value state has smallest possible value
     /// if key state has white turn, value state has maximum possible value
     private var optimalKnownMove: [GameState: GameState] = [:]
     // positive or negative infinity means that win can be forced
@@ -27,32 +27,16 @@ public class CheckersMinMax: CheckersPlayer {
     private var guessDepth: [GameState: Int] = [:]
 
     /// initial search depth
-    private var initialSearchDepth = 8
-
-    public var searchDepth: Int {
-        get {
-            return initialSearchDepth
-        } set(newValue) {
-            initialSearchDepth=newValue
-        }
-    }
-
-    public var cacheDepth: Int {
-        get {
-            return goodEnoughSearchDepth
-        } set(newValue) {
-            goodEnoughSearchDepth=newValue
-        }
-    }
+    public var searchDepth = 8
 
     /// how many moves deep must evaluation have taken place, in order to accept result from cache, Int.max disables.
-    private var goodEnoughSearchDepth = 5
+    public var cacheDepth = 5
 
     public var evaluator: MinMaxHeuristicEvaluator.Type = PieceCountRatioEvaluator.self
 
     public var name: String {
         return "Min-Max with alpha-beta pruning. " +
-            "Search dept: \(initialSearchDepth), cache depth: \(goodEnoughSearchDepth)"
+            "Search dept: \(searchDepth), cache depth: \(cacheDepth)"
     }
 
     required public init() {}
@@ -72,7 +56,7 @@ public class CheckersMinMax: CheckersPlayer {
     private func provideMoveWithMinMaxAlphaBeta(_ state: GameState) -> GameState? {
         _ = minMaxWithAlphaBeta(
             state: state,
-            depth: self.initialSearchDepth,
+            depth: self.searchDepth,
             alpha: -Double.infinity,
             beta: Double.infinity,
             evaluator: evaluator)
@@ -80,7 +64,7 @@ public class CheckersMinMax: CheckersPlayer {
     }
 
     /// Minimax algorithm with alpha-beta-pruning.
-    ///  Search depth is limited by depth paramet.
+    ///  Search depth is limited by depth parameter.
     ///  Fail-soft.
     /// - Parameters:
     ///   - state: Starting state
@@ -101,7 +85,7 @@ public class CheckersMinMax: CheckersPlayer {
         let children = state.children
 
         if knownValues[state] != nil
-            && (guessDepth[state]!<goodEnoughSearchDepth
+            && (guessDepth[state]!<cacheDepth
                     || knownValues[state]!.magnitude==Double.infinity) {
             return knownValues[state]!
         }

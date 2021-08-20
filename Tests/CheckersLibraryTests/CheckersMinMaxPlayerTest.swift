@@ -68,11 +68,25 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
         var whiteMove: GameState?
         for _ in 0...15 {
             whiteMove = white.provideMove(blackMove!)
-            XCTAssertNotNil(whiteMove, "White player should not lose from a state from which it can force win within searchdepth.")
+            XCTAssertNotNil(
+                whiteMove,
+                "White player should not lose from a state from which it can force win within searchdepth.")
             blackMove = black.provideMove(whiteMove!)
             guard blackMove != nil else { break }
         }
         XCTAssertNil(blackMove, "Black player should lose if white player can force win.")
+        let blackCanForceWinInFourTurns = PortableDraughtsNotation.PDNfenToGameState(
+            "B:BK10,K22,K23:WK2")
+        whiteMove = blackCanForceWinInFourTurns
+        for _ in 0...15 {
+            blackMove = black.provideMove(whiteMove!)
+            XCTAssertNotNil(
+                blackMove,
+                "Black player should not lose from a state from which it can force win within searchdepth.")
+            whiteMove = white.provideMove(blackMove!)
+            guard whiteMove != nil else { break }
+        }
+        XCTAssertNil(whiteMove, "White player should lose if black player can force win.")
     }
 
     static var allTests = [

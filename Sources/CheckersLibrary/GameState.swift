@@ -143,14 +143,6 @@ public struct GameState: Hashable {
     /// ie. dark squares
     public static let playableSquares: UInt64 = 6172840429334713770
 
-    /*
-     normal starting position
-     whiteMen = darkSquares & ~(UInt64.max>>16)
-     = 6172746239264686080 =
-     0b101_0101_1010_1010_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000
-     blackMen = darkSquares & ~(UInt64.max<<16) = 21930 = 0b0000_0000_..._0101_0101_1010_1010
-     blackKings=whiteKings=0
-    */
     public static let defaultStart = GameState(
         blackMen: 0b101_0101_1010_1010,
         blackKings: 0,
@@ -208,8 +200,10 @@ public struct GameState: Hashable {
     ///  - AND operation is instead preformed on opponentPieces instead of not allPieces
     ///  - AND-operation is preformed with notEdges.
     ///  - After that bits are shifted in same direction and by same offset as in the first step.
-    ///  - Result has a mask of pieces that can capture pieces in that direction, which is then iterated in O(n) time, whre n is number of set bits.
-    /// Piece is then checked, if it can preform another capture in O(a^b) time, where a is average count of directions in which piece can keep jumping.
+    ///  - Result has a mask of pieces that can capture pieces in that direction,
+    ///    which is then iterated in O(n) time, whre n is number of set bits.
+    /// Piece is then checked, if it can preform another capture in O(a^b) time,
+    /// where a is average count of directions in which piece can keep jumping.
     /// For kings: 0 <= a <= 3. For men 0<=a<=2. 0<b<16. However a and b are usually low 0 or 1.
     public var children: Set<GameState> {
         var children: Set<GameState> = []
@@ -307,6 +301,21 @@ public struct GameState: Hashable {
             }
         }
         return children
+    }
+
+    func number(of: CheckersPiece) -> Int {
+        switch of {
+        case .BlackMan:
+            return blackMen.nonzeroBitCount
+        case .BlackKing:
+            return blackKings.nonzeroBitCount
+        case .WhiteMan:
+            return whiteMen.nonzeroBitCount
+        case .WhiteKing:
+            return whiteKings.nonzeroBitCount
+        case .Empty:
+            return (GameState.playableSquares & ~blackMen & ~whiteMen & ~blackKings & ~whiteKings).nonzeroBitCount
+        }
     }
 
     /// Provides mask of pieces of certain type that can move to certain direction.
@@ -477,206 +486,26 @@ public struct GameState: Hashable {
             }
 
         default:
-            _=1^1// throw RuntimeError("Empty piece passed as piece to move.")
+            break
         }
     }
 
-    public func pieceAt(_ pos: Int) -> CheckersPiece {
-        if (blackMen>>pos & 1) == 1 {
+    public func piece(at: Int) -> CheckersPiece {
+        if (blackMen>>at & 1) == 1 {
             return CheckersPiece.BlackMan
-        } else if (blackKings>>pos & 1) == 1 {
+        } else if (blackKings>>at & 1) == 1 {
             return CheckersPiece.BlackKing
-        } else if (whiteKings>>pos & 1) == 1 {
+        } else if (whiteKings>>at & 1) == 1 {
             return CheckersPiece.WhiteKing
-        } else if (whiteMen>>pos & 1) == 1 {
+        } else if (whiteMen>>at & 1) == 1 {
             return CheckersPiece.WhiteMan
         } else {
             return CheckersPiece.Empty
         }
     }
 
-    public func piece(at: Int) -> CheckersPiece {
-        return pieceAt(at)
-    }
-
     private static func bitAt(bitset: Int, pos: Int) -> Bool {
         return (bitset>>pos & 1) == 1
     }
 
-    struct Capture: Sequence {
-        let piecesToMove: UInt64
-        let pieceType: CheckersPiece
-        let capturableMen: UInt64
-        let capturableKings: UInt64
-        let nonCapturablePieces: UInt64
-        let mask: UInt64
-        let diff: (Int, Int)
-        func makeIterator() -> CaptureIterator {
-            return CaptureIterator(self)
-        }
-    }
-
-    struct CaptureIterator: IteratorProtocol {
-        private var captureMask: UInt64
-        private var moveMask: UInt64
-        private var from: UInt64
-        private var to: UInt64
-        private var iteratorMask: UInt64
-        private let piecesToMove: UInt64
-        private let capturableMen: UInt64
-        private let capturableKings: UInt64
-        private let nonCapturablePieces: UInt64
-        private var chainedCaptures: [(UInt64, UInt64, UInt64)]=[]
-        private var legalCaptureDiffs: [(Int, Int)]
-        private var pos: Int=0
-        private var moveDiff: Int
-
-        init(_ capture: Capture) {
-            self.moveMask=(1<<(capture.diff.0+capture.diff.1)) | 1
-            self.moveDiff=capture.diff.1+capture.diff.0
-            if moveDiff>0 {
-                from=1
-                to=1<<moveDiff
-                self.iteratorMask = capture.mask
-                self.captureMask=1<<capture.diff.0
-            } else { // white
-                from = (1<<abs(moveDiff))
-                to = 1
-                self.iteratorMask = capture.mask>>abs(moveDiff)
-                self.captureMask=1<<abs(capture.diff.0)
-            }
-            self.piecesToMove=capture.piecesToMove
-            self.capturableMen=capture.capturableMen
-            self.capturableKings=capture.capturableKings
-            self.nonCapturablePieces=capture.nonCapturablePieces
-            self.legalCaptureDiffs=legalJumpDirections[capture.pieceType]!
-        }
-
-        mutating func next() -> (UInt64, UInt64, UInt64)? {
-            guard chainedCaptures.isEmpty else {
-                return chainedCaptures.removeFirst()
-            }
-            guard iteratorMask > 0
-                else { return nil }
-
-            pos+=iteratorMask.trailingZeroBitCount
-            from<<=iteratorMask.trailingZeroBitCount
-            to<<=iteratorMask.trailingZeroBitCount
-            captureMask<<=iteratorMask.trailingZeroBitCount
-            iteratorMask>>=iteratorMask.trailingZeroBitCount
-            iteratorMask^=1
-
-            let foundChainedCaptureStep=((piecesToMove & (~from)) | to,
-                   capturableMen & ~captureMask,
-                   capturableKings & ~captureMask)
-            let foundChainedCaptures = checkForChainedCaptures(
-                pos+moveDiff,
-                foundChainedCaptureStep.0,
-                foundChainedCaptureStep.1,
-                foundChainedCaptureStep.2)
-            return foundChainedCaptures ? chainedCaptures.removeFirst() : foundChainedCaptureStep
-        }
-
-        private mutating func checkForChainedCaptures(
-            _ pos: Int,
-            _ movablePieces: UInt64,
-            _ opponentMen: UInt64,
-            _ opponentKings: UInt64
-        ) -> Bool {
-            var foundChainedCaptures: Bool=false
-            for (captureDiff, moveDiff) in legalCaptureDiffs {
-                let freeSquares = ~(movablePieces|nonCapturablePieces|opponentMen|opponentKings)
-                if freeSquares[pos+captureDiff+moveDiff] && GameState.notEdges[pos+captureDiff] {
-                    if opponentMen[pos+captureDiff] {
-                        foundChainedCaptures=true
-                        var newOpponentMen=opponentMen
-                        newOpponentMen[pos+captureDiff]=false
-                        var newMovablePieces=movablePieces
-                        newMovablePieces[pos+moveDiff+captureDiff]=true
-                        newMovablePieces[pos]=false
-                        let foundMoreChainedCaptures = checkForChainedCaptures(
-                            pos+moveDiff+captureDiff,
-                            newMovablePieces,
-                            newOpponentMen,
-                            opponentKings)
-                        if !foundMoreChainedCaptures {
-                            self.chainedCaptures.append((newMovablePieces, newOpponentMen, opponentKings))
-                            foundChainedCaptures=true
-                        }
-                        foundChainedCaptures=foundChainedCaptures||foundMoreChainedCaptures
-                    } else if opponentKings[pos+captureDiff] {
-                        foundChainedCaptures=true
-                        var newOpponentKings=opponentKings
-                        newOpponentKings[pos+captureDiff]=false
-                        var newMovalbePieces=movablePieces
-                        newMovalbePieces[pos+moveDiff+captureDiff]=true
-                        newMovalbePieces[pos]=false
-                        foundChainedCaptures=foundChainedCaptures||checkForChainedCaptures(
-                            pos+moveDiff+captureDiff,
-                            newMovalbePieces,
-                            opponentMen,
-                            newOpponentKings)
-                        let foundMoreChainedCaptures = checkForChainedCaptures(
-                            pos+moveDiff+captureDiff,
-                            newMovalbePieces,
-                            opponentMen,
-                            newOpponentKings)
-                        if !foundMoreChainedCaptures {
-                            self.chainedCaptures.append((newMovalbePieces, opponentMen, newOpponentKings))
-                            foundChainedCaptures=true
-                        }
-                        foundChainedCaptures=foundChainedCaptures||foundMoreChainedCaptures
-                    }
-                }
-            }
-            return foundChainedCaptures
-        }
-
-    }
-
-    struct Move: Sequence {
-        let piecesToMove: UInt64
-        let mask: UInt64
-        let diff: CheckersMoveDiff
-        init(_ piecesToMove: UInt64, _ mask: UInt64, _ diff: CheckersMoveDiff) {
-            self.piecesToMove=piecesToMove
-            self.mask=mask
-            self.diff=diff
-        }
-        func makeIterator() -> MoveIterator {
-            return MoveIterator(self)
-        }
-    }
-
-    struct MoveIterator: IteratorProtocol {
-        private var from: UInt64
-        private var to: UInt64
-        private var iteratorMask: UInt64
-        private let piecesToMove: UInt64
-
-        init(_ move: Move) {
-            // mask has the pieces in original places
-            if move.diff.rawValue>0 {
-                from=1
-                to=1<<move.diff.rawValue
-                self.iteratorMask = move.mask
-            } else {
-                from = (1<<abs(move.diff.rawValue))
-                to = 1
-                self.iteratorMask = move.mask>>abs(move.diff.rawValue)
-            }
-            self.piecesToMove = move.piecesToMove
-
-        }
-        mutating func next() -> UInt64? {
-            guard iteratorMask > 0
-                else { return nil }
-            from<<=iteratorMask.trailingZeroBitCount
-            to<<=iteratorMask.trailingZeroBitCount
-            iteratorMask>>=iteratorMask.trailingZeroBitCount
-            iteratorMask^=1
-
-            return (piecesToMove|to)&(~from)
-        }
-    }
 }

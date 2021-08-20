@@ -14,7 +14,9 @@ public protocol MinMaxHeuristicEvaluator {
 /// Provides heuristic function for the CheckersMinMax by comparing ratios of pieces on the board.
 public struct PieceCountRatioEvaluator: MinMaxHeuristicEvaluator {
     /// It compares ratio of pieces on the board.
-    /// Number of white pieces is divided by number of black pieces, or number of black pieces divided by white pieces multiplied by -1 if number of black pieces on the board is greater.
+    /// Number of white pieces is divided by number of black pieces,
+    /// or number of black pieces divided by white pieces multiplied by -1
+    /// if number of black pieces on the board is greater.
     /// Complexity is O(1).
     /// - Parameter state: GameState to be evaluated.
     /// - Returns: Positive value if situation if favorable for the white player, negative if it is not.
