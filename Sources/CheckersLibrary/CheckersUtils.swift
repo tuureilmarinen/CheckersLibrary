@@ -97,7 +97,7 @@ public enum CheckersUtils {
     }
 
     public static func encode(dump: GameState) -> String {
-        var tmp = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        var tmp = Array(repeating: 0, count: 64)
         for at in 0...63 {
             if (dump.blackMen>>at & 1) == 1 {
                 tmp[at]+=1
@@ -114,6 +114,7 @@ public enum CheckersUtils {
     public static func decode(dump: String?) -> GameState? {
         guard dump != nil else { return nil }
         let a=Array(dump!)
+        guard a.count==65 else { return nil }
         var bm: UInt64=0
         var bk: UInt64=0
         var wm: UInt64=0

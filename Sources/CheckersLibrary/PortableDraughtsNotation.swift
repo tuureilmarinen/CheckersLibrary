@@ -70,6 +70,7 @@ public enum PortableDraughtsNotation {
         }
 
         let fenArray = fen.split(separator: ":", maxSplits: 3, omittingEmptySubsequences: true)
+        guard fenArray.count==3 else { return nil }
         let turn = fenArray[0]
         let piecesA=fenArray[1]
         let piecesB=fenArray[2]
