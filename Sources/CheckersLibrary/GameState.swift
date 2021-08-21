@@ -63,7 +63,7 @@ let CheckersDiff = (move: (
 
 /// GameState contains state of the board.
 /// It provides a way to get all legal moves from certain state.
-public struct GameState: Hashable {
+public struct GameState: Hashable, Codable {
     /// The state of the board is represented by a bitboard.
     /// Bit at the least significant position represents square at the leftmost square on the topmost square.
     /// - Parameters:
@@ -303,7 +303,7 @@ public struct GameState: Hashable {
         return children
     }
 
-    func number(of: CheckersPiece) -> Int {
+    public func number(of: CheckersPiece) -> Int {
         switch of {
         case .BlackMan:
             return blackMen.nonzeroBitCount

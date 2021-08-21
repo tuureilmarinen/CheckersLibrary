@@ -95,4 +95,53 @@ public enum CheckersUtils {
             whiteKings: whiteKings,
             blackTurn: isBlackTurn)
     }
+
+    public static func encode(dump: GameState) -> String {
+        var tmp = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        for at in 0...63 {
+            if (dump.blackMen>>at & 1) == 1 {
+                tmp[at]+=1
+            }
+            if (dump.blackKings>>at & 1) == 1 {
+                tmp[at]+=2            }
+            if (dump.whiteMen>>at & 1) == 1 {
+                tmp[at]+=4            }
+            if (dump.whiteKings>>at & 1) == 1 {
+                tmp[at]+=8            }
+        }
+        return tmp.map { String(format: "%X", $0) } .joined() + (dump.blackTurn ? "B":"W")
+    }
+    public static func decode(dump: String?) -> GameState? {
+        guard dump != nil else { return nil }
+        let a=Array(dump!)
+        var bm: UInt64=0
+        var bk: UInt64=0
+        var wm: UInt64=0
+        var wk: UInt64=0
+        for at in (0...63).reversed() {
+            wk<<=1
+            wm<<=1
+            bk<<=1
+            bm<<=1
+            var x = UInt8(strtoul(String(a[at]), nil, 16))
+            if x>=8 {
+                x-=8
+                wk|=1
+            }
+            if x>=4 {
+                x-=4
+                wm|=1
+            }
+            if x>=2 {
+                x-=2
+                bk|=1
+            }
+            if x>=1 {
+                bm|=1
+            }
+
+        }
+        let bt = a[64]=="B" ? true : false
+        return GameState(blackMen: bm, blackKings: bk, whiteMen: wm, whiteKings: wk, blackTurn: bt)
+    }
 }

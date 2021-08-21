@@ -46,12 +46,12 @@ final class GameStateTestsTests: XCTestCase {
                             PortableDraughtsNotation.stateToFen(state) + " -> " +
                             PortableDraughtsNotation.stateToFen(newState!))
             XCTAssertLessThanOrEqual(
-                newState!.blackMen.nonzeroBitCount,
-                state.blackMen.nonzeroBitCount,
+                newState!.number(of: .BlackMan),
+                state.number(of: .BlackMan),
                 "Number of black men should not increase.")
             XCTAssertLessThanOrEqual(
-                newState!.whiteMen.nonzeroBitCount,
-                state.whiteMen.nonzeroBitCount,
+                newState!.number(of: .WhiteMan),
+                state.number(of: .WhiteMan),
                 "Number of white men should not increase. " +
                     PortableDraughtsNotation.stateToFen(state) + " -> " +
                     PortableDraughtsNotation.stateToFen(newState!)
@@ -63,8 +63,8 @@ final class GameStateTestsTests: XCTestCase {
                     PortableDraughtsNotation.stateToFen(state) + " -> " +
                     PortableDraughtsNotation.stateToFen(newState!))
             XCTAssertLessThanOrEqual(
-                state.blackTurn ? newState!.whiteKings.nonzeroBitCount : newState!.blackKings.nonzeroBitCount,
-                state.blackTurn ? state.whiteKings.nonzeroBitCount : state.blackKings.nonzeroBitCount,
+                state.blackTurn ? newState!.number(of: .WhiteKing) : newState!.number(of: .BlackKing),
+                state.blackTurn ? state.number(of: .WhiteKing) : state.number(of: .BlackKing),
                 "Pieces should not turn into kings when player does not play.")
             state=newState!
         }
@@ -74,10 +74,10 @@ final class GameStateTestsTests: XCTestCase {
     func testMenTurnIntoKings() {
         var state=PortableDraughtsNotation.PDNfenToGameState("W:W6,8:BK20,22")
         for child in state!.children {
-            XCTAssertEqual(child.whiteMen.nonzeroBitCount, 1)
-            XCTAssertEqual(child.whiteKings.nonzeroBitCount, 1)
-            XCTAssertEqual(child.blackMen.nonzeroBitCount, 1)
-            XCTAssertEqual(child.blackKings.nonzeroBitCount, 1)
+            XCTAssertEqual(child.number(of: .WhiteMan), 1)
+            XCTAssertEqual(child.number(of: .WhiteKing), 1)
+            XCTAssertEqual(child.number(of: .BlackMan), 1)
+            XCTAssertEqual(child.number(of: .BlackKing), 1)
         }
         state=PortableDraughtsNotation.PDNfenToGameState("W:W5,10:B6,8")
         for child in state!.children {
