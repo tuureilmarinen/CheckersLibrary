@@ -62,6 +62,27 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
         }
     }
 
+    /// Tests cache.
+    /// - found values should be stored in cache
+    /// - if value is in the cache, it should be returned
+    /// - best found move should be the one stored in cache
+    func testCache() {
+        let minmax=CheckersMinMax()
+        var state: GameState?=GameState.defaultStart
+        XCTAssertEqual(minmax.knownValues.count, 0)
+        state=minmax.provideMove(state!)!
+        XCTAssertGreaterThanOrEqual(minmax.knownValues.count, 500)
+
+        for _ in 0...10 {
+            XCTAssertEqual(minmax.provideMove(state!), minmax.optimalKnownMove[state!]!)
+            state=minmax.provideMove(state!)!
+            let optimal=minmax.optimalKnownMove[state!]!
+            for child in state!.children {
+                XCTAssertGreaterThanOrEqual(minmax.evaluator.evaluate(child), minmax.evaluator.evaluate(optimal))
+            }
+        }
+    }
+
     /// Tests wheter player wins from state from which it can force win.
     func testMinMaxWinsIfWinCanForcedInSearchDepth() {
         let whiteCanForceWinInFourTurns = PortableDraughtsNotation.PDNfenToGameState(
@@ -94,6 +115,7 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
     }
 
     static var allTests = [
+        ("testCache", testCache),
         ("testPerformance", testPerformance),
         ("testProvidesLegalMove", testProvidesLegalMove),
         ("testMinMaxWinsIfWinCanForcedInSearchDepth", testMinMaxWinsIfWinCanForcedInSearchDepth)

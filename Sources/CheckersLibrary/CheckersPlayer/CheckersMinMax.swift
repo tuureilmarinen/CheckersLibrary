@@ -110,6 +110,7 @@ public class CheckersMinMax: CheckersPlayer {
             }
             optimalKnownMove[state] = highestChild
             guessDepth[state] = highestFoundValue.magnitude ==  .infinity ? Int.max : depth
+            knownValues[state]=highestFoundValue
             return highestFoundValue
         } else { // black turn -> minimizing
             var smallestFoundValue = Double.infinity
@@ -131,6 +132,7 @@ public class CheckersMinMax: CheckersPlayer {
             }
             guessDepth[state] = smallestFoundValue.magnitude ==  .infinity ? Int.max : depth
             optimalKnownMove[state] = smallestChild
+            knownValues[state]=smallestFoundValue
             return smallestFoundValue
         }
     }
