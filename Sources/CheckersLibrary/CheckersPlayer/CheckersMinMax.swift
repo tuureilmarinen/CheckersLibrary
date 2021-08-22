@@ -13,18 +13,12 @@ public class CheckersMinMax: CheckersPlayer {
 
     /// When key state has black turn, value state has smallest possible value
     /// if key state has white turn, value state has maximum possible value
-    private var optimalKnownMove: [GameState: GameState] = [:]
+    public var optimalKnownMove: [GameState: GameState] = [:]
     // positive or negative infinity means that win can be forced
-    private var knownValues: [GameState: Double] = [:]
-
-    public var knownStateValues: [GameState: (Double, GameState?)] {
-        return knownValues.reduce(into: [GameState: (Double, GameState?)]()) {
-            $0[$1.key]=($1.value, optimalKnownMove[$1.key])
-        }
-    }
+    public var knownValues: [GameState: Double] = [:]
 
     /// How many turns had been evaluated when determining the best move without finding a way to sure win.
-    private var guessDepth: [GameState: Int] = [:]
+    public var guessDepth: [GameState: Int] = [:]
 
     /// initial search depth
     public var searchDepth = 8
