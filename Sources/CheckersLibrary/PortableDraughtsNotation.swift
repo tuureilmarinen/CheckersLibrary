@@ -15,7 +15,7 @@ public enum PortableDraughtsNotation {
     }
 
     public static func PDNToInt(_ pdnSquareNumber: Int) -> Int {
-        return 2*pdnSquareNumber-(1+(pdnSquareNumber/4)%2)
+        return 2*(pdnSquareNumber-1)+(((pdnSquareNumber-1)/4).isMultiple(of: 2) ? 1 : 0)
     }
 
     public static func stateToFen(_ state: GameState) -> String {

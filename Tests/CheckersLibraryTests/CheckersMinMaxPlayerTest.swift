@@ -46,14 +46,18 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
         for _ in 0..<totalGames {
             let minmax=CheckersMinMax()
             var state: GameState?=GameState.defaultStart
+            var previousState=GameState.defaultStart
             var children: Set<GameState>
             for _ in 0...maxMovesPerGame {
                 children=state!.children
+                previousState=state!
                 state=minmax.provideMove(state!)
                 guard state != nil else { break }
                 XCTAssert(
                     children.contains(state!),
-                    "MinMaxPlayer should provide legal move.")
+                    "MinMaxPlayer should provide legal move. " +
+                        "Got \(String(describing: state)) from \(previousState)"
+                )
             }
         }
     }

@@ -63,7 +63,7 @@ let CheckersDiff = (move: (
 
 /// GameState contains state of the board.
 /// It provides a way to get all legal moves from certain state.
-public struct GameState: Hashable, Codable {
+public struct GameState: Hashable, Codable, CustomStringConvertible, Identifiable {
     /// The state of the board is represented by a bitboard.
     /// Bit at the least significant position represents square at the leftmost square on the topmost square.
     /// - Parameters:
@@ -72,7 +72,7 @@ public struct GameState: Hashable, Codable {
     ///   - whiteMen: Bitboard of the black men on the board.
     ///   - whiteKings: Bitboard of the black men on the board.
     ///   - blackTurn: True, if the player with the black pieces should make the next move.
-    init(blackMen: UInt64, blackKings: UInt64, whiteMen: UInt64, whiteKings: UInt64, blackTurn: Bool) {
+    public init(blackMen: UInt64, blackKings: UInt64, whiteMen: UInt64, whiteKings: UInt64, blackTurn: Bool) {
         self.blackMen=blackMen
         self.blackKings=blackKings
         self.whiteMen=whiteMen
@@ -83,6 +83,24 @@ public struct GameState: Hashable, Codable {
     public var blackKings: UInt64
     public var whiteMen: UInt64
     public var whiteKings: UInt64
+
+    public var id: String {
+        return CheckersUtils.encode(dump: self)
+    }
+
+    public var description: String { return "GameState: \(CheckersUtils.encode(dump: self))" }
+
+    public var valid: Bool {
+        return whiteMen & whiteKings == 0 &&
+        whiteMen & blackMen == 0 &&
+        whiteMen & blackKings == 0 &&
+        blackMen & blackKings == 0 &&
+        blackMen & whiteKings == 0 &&
+        blackKings & whiteKings == 0 &&
+        (whiteMen | whiteKings | blackMen | blackKings) & GameState.whiteSquares == 0 &&
+        blackMen & GameState.whiteEndMask == 0 &&
+            whiteMen & GameState.blackEndMask == 0
+    }
 
     /* 0b1111_1111
         _1000_0001
