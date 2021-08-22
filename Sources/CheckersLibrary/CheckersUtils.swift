@@ -46,15 +46,14 @@ public enum CheckersUtils {
         return foundMoves
     }
 
-    public static func getSetBitIndexes(_ mask: UInt64) -> [Int] {
+    public static func getSetBitIndexes<T:FixedWidthInteger&BinaryInteger>(_ mask: T) -> [Int] {
         var setBitIndexes: [Int] = []
         var mask = mask
-        repeat {
+        while mask>0 {
             setBitIndexes.append(mask.trailingZeroBitCount)
             mask>>=mask.trailingZeroBitCount
             mask^=1
-
-        } while mask>0
+        }
         return setBitIndexes
     }
 
@@ -79,21 +78,25 @@ public enum CheckersUtils {
         blackKings: Int=0,
         whiteKings: Int=0
     ) -> GameState {
-        var unoccupied: UInt64=GameState.playableSquares
-        let blackMen=getRandomBitsSet(unoccupied, blackMen)
-        unoccupied &= ~blackMen
-        let blackKings=getRandomBitsSet(unoccupied, blackKings)
-        unoccupied &= ~blackKings
-        let whiteKings=getRandomBitsSet(unoccupied, whiteKings)
-        unoccupied &= ~whiteKings
-        let whiteMen=getRandomBitsSet(unoccupied, whiteMen)
-        let isBlackTurn = (turn == nil ? Bool.random() : turn! == .Black)
-        return GameState(
-            blackMen: blackMen,
-            blackKings: blackKings,
-            whiteMen: whiteMen,
-            whiteKings: whiteKings,
-            blackTurn: isBlackTurn)
+        var state:GameState
+        repeat {
+            var unoccupied: UInt64=GameState.playableSquares
+            let blackMen=getRandomBitsSet(unoccupied, blackMen)
+            unoccupied &= ~blackMen
+            let blackKings=getRandomBitsSet(unoccupied, blackKings)
+            unoccupied &= ~blackKings
+            let whiteKings=getRandomBitsSet(unoccupied, whiteKings)
+            unoccupied &= ~whiteKings
+            let whiteMen=getRandomBitsSet(unoccupied, whiteMen)
+            let isBlackTurn = (turn == nil ? Bool.random() : turn! == .Black)
+            state = GameState(
+                blackMen: blackMen,
+                blackKings: blackKings,
+                whiteMen: whiteMen,
+                whiteKings: whiteKings,
+                blackTurn: isBlackTurn)
+        } while !state.valid
+        return state
     }
 
     public static func encode(dump: GameState) -> String {
