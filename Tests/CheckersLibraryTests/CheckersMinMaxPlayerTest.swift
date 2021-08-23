@@ -38,6 +38,14 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
             "Player should not lose more than 20% of games against a player making random moves.")
     }
 
+    func testAlphaCutoff() {
+
+    }
+
+    func testBetaCutoff() {
+
+    }
+
     /// The provideMove-method should always return a position that is one move away from the state
     /// ie. it does not return illegal moves.
     func testProvidesLegalMove() {
@@ -77,13 +85,8 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
 
         for _ in 0...10 {
             XCTAssertEqual(minmax.provideMove(state!), minmax.optimalKnownMove[state!]!)
-            let newState=minmax.provideMove(state!)
-            guard newState != nil else { break }
-            let optimal=minmax.optimalKnownMove[state!]!
-            state=newState!
-            for child in state!.children {
-                XCTAssertGreaterThanOrEqual(minmax.evaluator.evaluate(optimal), minmax.evaluator.evaluate(child))
-            }
+            state=minmax.provideMove(state!)
+            guard state != nil else { break }
         }
     }
 

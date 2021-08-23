@@ -78,9 +78,11 @@ public class CheckersMinMax: CheckersPlayer {
         var beta=beta
         let children = state.children
 
-        if knownValues[state] != nil
-            && (guessDepth[state]!>cacheDepth) {
-            return knownValues[state]!
+        if knownValues[state] != nil {
+            let (value, overflow) = (guessDepth[state]!).addingReportingOverflow(depth)
+            if overflow || value>cacheDepth {
+                return knownValues[state]!
+            }
         }
         // White win = max, black win =min
         else if children.isEmpty {
