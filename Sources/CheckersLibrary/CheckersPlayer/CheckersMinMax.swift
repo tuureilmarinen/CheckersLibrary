@@ -72,14 +72,15 @@ public class CheckersMinMax: CheckersPlayer {
         depth: Int,
         alpha: Double,
         beta: Double,
-        evaluator: MinMaxHeuristicEvaluator.Type
+        evaluator: MinMaxHeuristicEvaluator.Type,
+        currentDepth: Int=0
     ) -> Double {
         var alpha=alpha
         var beta=beta
         let children = state.children
 
         if knownValues[state] != nil {
-            let (value, overflow) = (guessDepth[state]!).addingReportingOverflow(depth)
+            let (value, overflow) = (guessDepth[state]!).addingReportingOverflow(currentDepth)
             if overflow || value>cacheDepth {
                 return knownValues[state]!
             }
@@ -87,7 +88,7 @@ public class CheckersMinMax: CheckersPlayer {
         // White win = max, black win =min
         else if children.isEmpty {
             return state.blackTurn ? Double.infinity : -Double.infinity
-        } else if depth==0 {
+        } else if currentDepth==depth {
             return PieceCountRatioEvaluator.evaluate(state)
         }
 
@@ -97,10 +98,11 @@ public class CheckersMinMax: CheckersPlayer {
             for child in children {
                 let childValue = minMaxWithAlphaBeta(
                     state: child,
-                    depth: depth-1,
+                    depth: depth,
                     alpha: alpha,
                     beta: beta,
-                    evaluator: evaluator)
+                    evaluator: evaluator,
+                    currentDepth: currentDepth+1)
                 if childValue>=highestFoundValue {
                     highestFoundValue = childValue
                     highestChild = child
@@ -110,7 +112,7 @@ public class CheckersMinMax: CheckersPlayer {
 
             }
             optimalKnownMove[state] = highestChild
-            guessDepth[state] = highestFoundValue.magnitude ==  .infinity ? Int.max : depth
+            guessDepth[state] = highestFoundValue.magnitude ==  .infinity ? Int.max : (depth-currentDepth)
             knownValues[state]=highestFoundValue
             return highestFoundValue
         } else { // black turn -> minimizing
@@ -119,10 +121,11 @@ public class CheckersMinMax: CheckersPlayer {
             for child in children {
                 let childValue = minMaxWithAlphaBeta(
                     state: child,
-                    depth: depth-1,
+                    depth: depth,
                     alpha: alpha,
                     beta: beta,
-                    evaluator: evaluator)
+                    evaluator: evaluator,
+                    currentDepth: currentDepth+1)
                 if childValue<=smallestFoundValue {
                     smallestFoundValue = childValue
                     smallestChild=child
@@ -131,7 +134,7 @@ public class CheckersMinMax: CheckersPlayer {
                 beta=min(beta, smallestFoundValue)
 
             }
-            guessDepth[state] = smallestFoundValue.magnitude ==  .infinity ? Int.max : depth
+            guessDepth[state] = smallestFoundValue.magnitude ==  .infinity ? Int.max : (depth-currentDepth)
             optimalKnownMove[state] = smallestChild
             knownValues[state]=smallestFoundValue
             return smallestFoundValue

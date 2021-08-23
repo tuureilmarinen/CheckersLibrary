@@ -38,10 +38,13 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
             "Player should not lose more than 20% of games against a player making random moves.")
     }
 
+    /// TODO
+    /// Test that beta-cutoff actually occurs and does not occur when it should not.
     func testAlphaCutoff() {
 
     }
-
+    /// TODO
+    /// Test that beta-cutoff actually occurs and does not occur when it should not.
     func testBetaCutoff() {
 
     }
@@ -89,8 +92,27 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
             guard state != nil else { break }
         }
     }
-
-    func testValueWithinAcceptableCacheDepthIsReturned() {
+    func testValueOutsideOfAcceptableCacheDepthIsNotReturnedFromCache() {
+        let minmax=CheckersMinMax()
+        let second = GameState(
+            blackMen: 0b0000_0000_0000_0010_0001_0000_1000_0000_0000_0100_0000_0000_0100_0101_0000_1010,
+           blackKings: 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000,
+           whiteMen: 0b0000_0000_1010_0000_0100_0000_0000_0000_0000_0001_0010_0000_0001_0000_0000_0000,
+           whiteKings: 0b0001_0001_0000_0000_0000_0000_0010_1000_0000_0000_1000_0000_0000_0000_1000_0000,
+           blackTurn: true)
+        let third = GameState(
+            blackMen: 0b0000_0000_0000_1000_0000_0101_0000_1000_0101_0000_0000_0010_0000_0101_1010_1000,
+            blackKings: 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000,
+            whiteMen: 0b0100_0000_0000_0000_0000_0000_0010_0000_0000_0100_0000_0000_0000_0000_0000_0000,
+            whiteKings: 0b0000_0100_0000_0010_0101_0000_0000_0010_0000_0001_1010_0000_0001_0000_0000_0000,
+            blackTurn: false)
+        minmax.cacheDepth=10
+        minmax.knownValues[second] = Double.infinity
+        minmax.optimalKnownMove[second] = third
+        minmax.guessDepth[second]=3
+        XCTAssertNotEqual(minmax.provideMove(second)!, third)
+    }
+    func testValueWithinAcceptableCacheDepthIsReturnedFromCache() {
         let minmax=CheckersMinMax()
         let first = GameState(
             blackMen: 0b0000_0000_0010_1000_0101_0100_0010_0000_0101_0100_0000_0010_0000_0000_1000_0010,
@@ -98,27 +120,17 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
             whiteMen: 0b0100_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0100_0000_0000_0000,
             whiteKings: 0b0000_0101_1000_0000_0000_0000_0000_0000_0000_0000_0010_0000_0000_0000_0000_0000,
             blackTurn: true)
-        let second = GameState(blackMen: 0b0000_0000_0000_0010_0001_0000_1000_0000_0000_0100_0000_0000_0100_0101_0000_1010,
-                               blackKings: 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000,
-                               whiteMen: 0b0000_0000_1010_0000_0100_0000_0000_0000_0000_0001_0010_0000_0001_0000_0000_0000,
-                               whiteKings: 0b0001_0001_0000_0000_0000_0000_0010_1000_0000_0000_1000_0000_0000_0000_1000_0000,
-                               blackTurn: true)
-        let third = GameState(
-            blackMen: 0b0000_0000_0010_1000_0101_0100_0010_1000_0100_0100_0000_0010_0000_0000_1000_0010,
-            blackKings: 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000,
-            whiteMen: 0b0100_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0100_0000_0000_0000,
-            whiteKings: 0b0000_0101_1000_0000_0000_0000_0000_0000_0000_0000_0010_0000_0000_0000_0000_0000,
-            blackTurn: false)
+        let second = GameState(
+            blackMen: 0b0000_0000_0000_0010_0001_0000_1000_0000_0000_0100_0000_0000_0100_0101_0000_1010,
+           blackKings: 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000,
+           whiteMen: 0b0000_0000_1010_0000_0100_0000_0000_0000_0000_0001_0010_0000_0001_0000_0000_0000,
+           whiteKings: 0b0001_0001_0000_0000_0000_0000_0010_1000_0000_0000_1000_0000_0000_0000_1000_0000,
+           blackTurn: true)
         minmax.knownValues[first] = -Double.infinity
         minmax.optimalKnownMove[first] = second
         minmax.guessDepth[first]=9001
         XCTAssertEqual(minmax.provideMove(first)!, second)
 
-        minmax.cacheDepth=10
-        minmax.knownValues[second] = Double.infinity
-        minmax.optimalKnownMove[second] = third
-        minmax.guessDepth[second]=3
-        XCTAssertNotEqual(minmax.provideMove(second)!, third)
     }
 
     /// Tests wheter player wins from state from which it can force win.
