@@ -46,7 +46,7 @@ public enum CheckersUtils {
         return foundMoves
     }
 
-    public static func getSetBitIndexes<T:FixedWidthInteger&BinaryInteger>(_ mask: T) -> [Int] {
+    public static func getSetBitIndexes<T: FixedWidthInteger&BinaryInteger>(_ mask: T) -> [Int] {
         var setBitIndexes: [Int] = []
         var mask = mask
         while mask>0 {
@@ -78,7 +78,7 @@ public enum CheckersUtils {
         blackKings: Int=0,
         whiteKings: Int=0
     ) -> GameState {
-        var state:GameState
+        var state: GameState
         repeat {
             var unoccupied: UInt64=GameState.playableSquares
             let blackMen=getRandomBitsSet(unoccupied, blackMen)

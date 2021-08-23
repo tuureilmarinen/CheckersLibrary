@@ -70,17 +70,52 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
         let minmax=CheckersMinMax()
         var state: GameState?=GameState.defaultStart
         XCTAssertEqual(minmax.knownValues.count, 0)
-        state=minmax.provideMove(state!)!
+        let newState=minmax.provideMove(state!)!
+        XCTAssertEqual(minmax.guessDepth[state!], minmax.searchDepth)
+        state=newState
         XCTAssertGreaterThanOrEqual(minmax.knownValues.count, 500)
 
         for _ in 0...10 {
             XCTAssertEqual(minmax.provideMove(state!), minmax.optimalKnownMove[state!]!)
-            state=minmax.provideMove(state!)!
+            let newState=minmax.provideMove(state!)
+            guard newState != nil else { break }
             let optimal=minmax.optimalKnownMove[state!]!
+            state=newState!
             for child in state!.children {
-                XCTAssertGreaterThanOrEqual(minmax.evaluator.evaluate(child), minmax.evaluator.evaluate(optimal))
+                XCTAssertGreaterThanOrEqual(minmax.evaluator.evaluate(optimal), minmax.evaluator.evaluate(child))
             }
         }
+    }
+
+    func testValueWithinAcceptableCacheDepthIsReturned() {
+        let minmax=CheckersMinMax()
+        let first = GameState(
+            blackMen: 0b0000_0000_0010_1000_0101_0100_0010_0000_0101_0100_0000_0010_0000_0000_1000_0010,
+            blackKings: 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000,
+            whiteMen: 0b0100_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0100_0000_0000_0000,
+            whiteKings: 0b0000_0101_1000_0000_0000_0000_0000_0000_0000_0000_0010_0000_0000_0000_0000_0000,
+            blackTurn: true)
+        let second = GameState(blackMen: 0b0000_0000_0000_0010_0001_0000_1000_0000_0000_0100_0000_0000_0100_0101_0000_1010,
+                               blackKings: 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000,
+                               whiteMen: 0b0000_0000_1010_0000_0100_0000_0000_0000_0000_0001_0010_0000_0001_0000_0000_0000,
+                               whiteKings: 0b0001_0001_0000_0000_0000_0000_0010_1000_0000_0000_1000_0000_0000_0000_1000_0000,
+                               blackTurn: true)
+        let third = GameState(
+            blackMen: 0b0000_0000_0010_1000_0101_0100_0010_1000_0100_0100_0000_0010_0000_0000_1000_0010,
+            blackKings: 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000,
+            whiteMen: 0b0100_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0100_0000_0000_0000,
+            whiteKings: 0b0000_0101_1000_0000_0000_0000_0000_0000_0000_0000_0010_0000_0000_0000_0000_0000,
+            blackTurn: false)
+        minmax.knownValues[first] = -Double.infinity
+        minmax.optimalKnownMove[first] = second
+        minmax.guessDepth[first]=9001
+        XCTAssertEqual(minmax.provideMove(first)!, second)
+
+        minmax.cacheDepth=10
+        minmax.knownValues[second] = Double.infinity
+        minmax.optimalKnownMove[second] = third
+        minmax.guessDepth[second]=3
+        XCTAssertNotEqual(minmax.provideMove(second)!, third)
     }
 
     /// Tests wheter player wins from state from which it can force win.

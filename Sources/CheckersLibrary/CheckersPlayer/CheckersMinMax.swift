@@ -79,8 +79,7 @@ public class CheckersMinMax: CheckersPlayer {
         let children = state.children
 
         if knownValues[state] != nil
-            && (guessDepth[state]!<cacheDepth
-                    || knownValues[state]!.magnitude==Double.infinity) {
+            && (guessDepth[state]!>cacheDepth) {
             return knownValues[state]!
         }
         // White win = max, black win =min
