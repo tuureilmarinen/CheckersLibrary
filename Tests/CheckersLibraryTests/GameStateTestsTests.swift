@@ -13,13 +13,40 @@ final class GameStateTestsTests: XCTestCase {
     /// Tests if GameState can validate itself correctly
     func testInternalStateValidator() {
         XCTAssertTrue(
-            GameState(blackMen: 0b1000, blackKings: 0b10, whiteMen: 0b1_0000_0000, whiteKings: 0b10_0000, blackTurn: true).valid)
+            GameState(
+                blackMen: 0b1000,
+                blackKings: 0b10,
+                whiteMen: 0b1_0000_0000,
+                whiteKings: 0b10_0000,
+                blackTurn: true
+            ).valid)
         XCTAssertFalse(
-            GameState(blackMen: 0b1000, blackKings: 0b11, whiteMen: 0b1_0000_0000, whiteKings: 0b10_0000, blackTurn: false).valid)
+            GameState(
+                blackMen: 0b1000,
+                blackKings: 0b11,
+                whiteMen: 0b1_0000_0000,
+                whiteKings: 0b10_0000,
+                blackTurn: false
+            ).valid,
+            "Black king at nonplayablable square should render state illegal.")
         XCTAssertFalse(
-            GameState(blackMen: 0b1010, blackKings: 0b10, whiteMen: 0b1_0000_0000, whiteKings: 0b10_0000, blackTurn: false).valid)
+            GameState(
+                blackMen: 0b1010,
+                blackKings: 0b10,
+                whiteMen: 0b1_0000_0000,
+                whiteKings: 0b10_0000,
+                blackTurn: false
+            ).valid,
+            "A black man and a black king at the same square should render the state illegal.")
         XCTAssertFalse(
-            GameState(blackMen: 0b1010, blackKings: 0b10, whiteMen: 0b1_0000_0010, whiteKings: 0b10_0000, blackTurn: false).valid, "No white men should stay as men at black end")
+            GameState(
+                blackMen: 0b1010,
+                blackKings: 0b10,
+                whiteMen: 0b1_0000_0010,
+                whiteKings: 0b10_0000,
+                blackTurn: false
+            ).valid,
+            "White men should not stay as men at the black end.")
     }
 
     /// Tests if pieces stay in the squares playable in the english draughts.

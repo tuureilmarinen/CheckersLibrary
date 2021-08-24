@@ -161,12 +161,16 @@ public struct GameState: Hashable, Codable, CustomStringConvertible, Identifiabl
     /// ie. dark squares
     public static let playableSquares: UInt64 = 6172840429334713770
 
+    /// Default starting position.
+    /// Both players have 12 pieces located on the dark squares closest to player's own side.
+    /// Black moves first.
     public static let defaultStart = GameState(
-        blackMen: 0b101_0101_1010_1010,
-        blackKings: 0,
-        whiteMen: 0b101_0101_1010_1010_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000,
-        whiteKings: 0,
-        blackTurn: true)
+        blackMen: 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1010_1010_0101_0101_1010_1010,
+        blackKings: 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000,
+        whiteMen: 0b0101_0101_1010_1010_0101_0101_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000,
+        whiteKings: 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000,
+        blackTurn: true
+    )
 
     // A computed property of all black pieces on the board.
     public var blackPieces: UInt64 {
