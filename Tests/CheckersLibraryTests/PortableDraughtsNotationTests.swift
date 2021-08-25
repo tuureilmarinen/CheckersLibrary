@@ -32,9 +32,9 @@ final class PortableDraughtsNotationTests: XCTestCase {
     }
     /// Tests if state of the board is encoded correctly into FEN-string.
     func testStatetoFen() {
-        XCTAssertEqual(PortableDraughtsNotation.stateToFen(gameStateA), fenA)
+        XCTAssertEqual(PortableDraughtsNotation.encode(gameStateA), fenA)
         XCTAssertEqual(
-            PortableDraughtsNotation.stateToFen(gamestateB),
+            PortableDraughtsNotation.encode(gamestateB),
             "B:WK16,25,26,27,28,29,30,31,32:B1,2,3,4,5,6,7,8,9,13,14,15,K18")
     }
 

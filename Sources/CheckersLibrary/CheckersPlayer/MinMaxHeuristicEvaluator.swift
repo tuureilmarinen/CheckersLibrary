@@ -13,7 +13,7 @@ public protocol MinMaxHeuristicEvaluator {
 
 /// Provides heuristic function for the CheckersMinMax by comparing ratios of pieces on the board.
 public struct PieceCountRatioEvaluator: MinMaxHeuristicEvaluator {
-    public init(){}
+    public init() {}
     /// It compares ratio of pieces on the board.
     /// Number of white pieces is divided by number of black pieces,
     /// or number of black pieces divided by white pieces multiplied by -1
@@ -49,20 +49,19 @@ public struct WeightedPieceCountRatioEvaluator: MinMaxHeuristicEvaluator {
             return Double(state.number(of: .WhiteKings)) * remainingKings +
                 Double(state.number(of: .WhiteMen))*remainingMen
         } else if state.number(of: .White)==0 {
-            return Double(state.number(of: .WhiteKings)) * remainingKings +
-                Double(state.number(of: .WhiteMen))*remainingMen
+            return -1 * (Double(state.number(of: .BlackKings)) * remainingKings +
+                Double(state.number(of: .BlackMen))*remainingMen)
         } else if state.number(of: .Black)>state.number(of: .White) {
+            let pieceRatio = Double(state.number(of: .Black))/Double(state.number(of: .White))
+            let kingRatio = Double(state.number(of: .BlackKings))/Double(max(state.number(of: .BlackMen), 1))
+            let turnRatio: Double = state.turn == .Black ? 1 : 0
+            return -1*(pieceRatio*piece+kingRatio*king+turnRatio*turn-1)
+        } else {
             let pieceRatio = Double(state.number(of: .White))/Double(state.number(of: .Black))
             let kingRatio = Double(state.number(of: .WhiteKings)) /
                 Double(max(state.number(of: .WhiteMen), 1))
             let turnRatio: Double = state.turn == .White ? 1 : 0
-            return pieceRatio*piece+kingRatio*king+turnRatio*turn-1
-        } else {
-            let pieceRatio = Double(state.number(of: .Black))/Double(state.number(of: .White))
-            let kingRatio = Double(state.number(of: .BlackKings))/Double(max(state.number(of: .BlackMen), 1))
-            let turnRatio: Double = state.turn == .White ? 1 : 0
-            return -1*(pieceRatio*piece+kingRatio*king+turnRatio*turn-1)
-
+            return (pieceRatio*piece)+(kingRatio*king)+(turnRatio*turn)-1
         }
     }
 }

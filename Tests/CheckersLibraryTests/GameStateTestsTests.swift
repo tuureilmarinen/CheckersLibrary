@@ -52,7 +52,7 @@ final class GameStateTestsTests: XCTestCase {
     /// Tests if pieces stay in the squares playable in the english draughts.
     func testPiecesShouldStayInDarkSquares() {
         var state = GameState.defaultStart
-        let player = CheckersDeterministicRandomPlayer()
+        var player = CheckersDeterministicRandomPlayer()
         for _ in 0..<100 {
             let children = state.children
             guard !children.isEmpty else { break }
@@ -69,7 +69,7 @@ final class GameStateTestsTests: XCTestCase {
     func testPieceCount() {
         var state = GameState.defaultStart
         var newState: GameState?
-        let player = CheckersDeterministicRandomPlayer()
+        var player = CheckersDeterministicRandomPlayer()
         for _ in 0..<100 {
             newState=player.provideMove(state)
             guard newState != nil else { break }
@@ -83,12 +83,12 @@ final class GameStateTestsTests: XCTestCase {
                            "Pieces should stay in playable squares." +
                             CheckersUtils.encode(dump: state) + " -> " + CheckersUtils.encode(dump: newState!))
             XCTAssertLessThanOrEqual(
-                newState!.number(of: .BlackMan),
-                state.number(of: .BlackMan),
+                newState!.number(of: .BlackMen),
+                state.number(of: .BlackMen),
                 "Number of black men should not increase.")
             XCTAssertLessThanOrEqual(
-                newState!.number(of: .WhiteMan),
-                state.number(of: .WhiteMan),
+                newState!.number(of: .WhiteMen),
+                state.number(of: .WhiteMen),
                 "Number of white men should not increase. " +
                     CheckersUtils.encode(dump: state) + " -> " + CheckersUtils.encode(dump: newState!))
             XCTAssertEqual(
@@ -97,21 +97,39 @@ final class GameStateTestsTests: XCTestCase {
                 "Player should not lose any pieces during his own turn." +
                     CheckersUtils.encode(dump: state) + " -> " + CheckersUtils.encode(dump: newState!))
             XCTAssertLessThanOrEqual(
-                state.blackTurn ? newState!.number(of: .WhiteKing) : newState!.number(of: .BlackKing),
-                state.blackTurn ? state.number(of: .WhiteKing) : state.number(of: .BlackKing),
+                state.blackTurn ? newState!.number(of: .WhiteKings) : newState!.number(of: .BlackKings),
+                state.blackTurn ? state.number(of: .WhiteKings) : state.number(of: .BlackKings),
                 "Pieces should not turn into kings when player does not play.")
             state=newState!
         }
+    }
+    
+    func testNumberOf() {
+        let state=GameState(
+            blackMen: 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1010_1010,
+            blackKings: 0b0000_0000_0000_0000_0000_0000_0010_0000_0000_0000_0010_1000_0101_0100_0000_0000,
+            whiteMen: 0b0001_0100_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000,
+            whiteKings: 0b0100_0000_0000_1010_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000,
+            blackTurn: true
+        )
+        XCTAssertEqual(state.number(of: .Black), 10)
+        XCTAssertEqual(state.number(of: .BlackMen), 4)
+        XCTAssertEqual(state.number(of: .BlackKings), 6)
+        XCTAssertEqual(state.number(of: .White), 5)
+        XCTAssertEqual(state.number(of: .WhiteMen), 2)
+        XCTAssertEqual(state.number(of: .WhiteKings), 3)
+        XCTAssertEqual(state.number(of: .All), 15)
+        XCTAssertEqual(state.number(of: .Empty), 17)
     }
 
     /// Tests that men turn into kings when and only when they reach the opposite end of the board.
     func testMenTurnIntoKings() {
         var state=CheckersUtils.decode(dump: "0000000000400040000000000000000000000002001000000000000000000000W")
         for child in state!.children {
-            XCTAssertEqual(child.number(of: .WhiteMan), 1)
-            XCTAssertEqual(child.number(of: .WhiteKing), 1)
-            XCTAssertEqual(child.number(of: .BlackMan), 1)
-            XCTAssertEqual(child.number(of: .BlackKing), 1)
+            XCTAssertEqual(child.number(of: .WhiteMen), 1)
+            XCTAssertEqual(child.number(of: .WhiteKings), 1)
+            XCTAssertEqual(child.number(of: .BlackMen), 1)
+            XCTAssertEqual(child.number(of: .BlackKings), 1)
         }
         state=PortableDraughtsNotation.decode("W:W5,10:B6,8")
         state=CheckersUtils.decode(dump: "0000000040100010000400000000000000000000000000000000000000000000W")!
