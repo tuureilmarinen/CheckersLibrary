@@ -7,13 +7,23 @@
 
 import Foundation
 
-public enum CheckersPiece {
-    case BlackMan, BlackKing, WhiteMan, WhiteKing, Empty
+public enum CheckersPiece: Int {
+    case BlackMan = 1
+    case BlackKing = 2
+    case WhiteMan = 3
+    case WhiteKing = 4
+
+    func color (_ color: CheckersColor) -> Bool {
+        return (self.rawValue<3 && color == .Black) || (self.rawValue>2 && color == .White)
+    }
 }
 
 public enum CheckersColor {
     case Black
     case White
+    func flip() -> CheckersColor {
+        return self == .Black ? .White : .Black
+    }
 }
 
 public enum CheckersPieceSelector: Int {
@@ -40,6 +50,26 @@ struct CheckersCaptureDiff {
     static let DownRight = (9, 9)
     static let UpLeft = (-9, -9)
     static let UpRight = (-7, -7)
+}
+
+enum UpDown: Int {
+    case up = -1
+    case down = 1
+}
+
+enum CaptureDirection {
+    case left(UpDown)
+    case right(UpDown)
+}
+
+enum MoveDirection {
+    case left(UpDown)
+    case right(UpDown)
+}
+
+enum KingsMen {
+    case Kings
+    case Men
 }
 
 let legalJumpDirections: [CheckersPiece: [(Int, Int)]] = [
@@ -84,16 +114,45 @@ public struct GameState: Hashable, Codable, CustomStringConvertible, Identifiabl
     ///   - whiteKings: Bitboard of the black men on the board.
     ///   - blackTurn: True, if the player with the black pieces should make the next move.
     public init(blackMen: UInt64, blackKings: UInt64, whiteMen: UInt64, whiteKings: UInt64, blackTurn: Bool) {
-        self.blackMen=blackMen
-        self.blackKings=blackKings
-        self.whiteMen=whiteMen
-        self.whiteKings=whiteKings
+        board=EightByEightBoard(blackMen: blackMen, whiteMen: whiteMen, blackKings: blackKings, whiteKings: whiteKings)
         self.blackTurn=blackTurn
     }
-    public var blackMen: UInt64
-    public var blackKings: UInt64
-    public var whiteMen: UInt64
-    public var whiteKings: UInt64
+
+    private var board: EightByEightBoard
+    public var blackMen: UInt64 {
+        get {
+            return board.blackMen
+        }
+        set(value) {
+            board.blackMen=value
+        }
+    }
+
+    public var blackKings: UInt64 {
+        get {
+            return board.blackKings
+        }
+        set(value) {
+            board.blackKings=value
+        }
+    }
+
+    public var whiteMen: UInt64 {
+        get {
+            return board.whiteMen
+        }
+        set(value) {
+            board.whiteMen=value
+        }
+    }
+    public var whiteKings: UInt64 {
+        get {
+            return board.whiteKings
+        }
+        set(value) {
+            board.whiteKings=value
+        }
+    }
 
     public var id: String {
         return CheckersUtils.encode(dump: self)
@@ -108,69 +167,15 @@ public struct GameState: Hashable, Codable, CustomStringConvertible, Identifiabl
         blackMen & blackKings == 0 &&
         blackMen & whiteKings == 0 &&
         blackKings & whiteKings == 0 &&
-        (whiteMen | whiteKings | blackMen | blackKings) & GameState.whiteSquares == 0 &&
-        blackMen & GameState.whiteEndMask == 0 &&
-            whiteMen & GameState.blackEndMask == 0
+        (whiteMen | whiteKings | blackMen | blackKings) & ~GameState.playableSquares == 0 &&
+        blackMen & EightByEightBoard.whiteEnd == 0 &&
+            whiteMen & EightByEightBoard.blackEnd == 0
     }
 
-    /* 0b1111_1111
-        _1000_0001
-        _1000_0001
-        _1000_0001
-        _1000_0001
-        _1000_0001
-        _1000_0001
-        _1111_1111 */
-    public static let edges: UInt64 = 18411139144890810879
-
-    /// ~edges
-    public static let notEdges: UInt64 = 35604928818740736
-
-    /* 0b
-    / 1000_0000_
-    1000_0000_
-    1000_0000_
-    1000_0000_
-    1000_0000_
-    1000_0000_
-    1000_0000_
-    1000_0000 */
-    public static let rightEdge: UInt64 = 9259542123273814144
-
-    /* 0b
-     0000_0001_
-     0000_0001_
-     0000_0001_
-     0000_0001_
-     0000_0001_
-     0000_0001_
-     0000_0001_
-     0000_0001 */
-    public static let leftEdge: UInt64 = 72340172838076673
-
-    // 0b1111_1111_0000...
-    public static let whiteEndMask: UInt64 = 18374686479671623680
-
-    /// 0b0000_0000_0000_.......1111_1111
-    public static let blackEndMask: UInt64 = 255
-
-    /// 0b0101_0101_1010_1010_0101_0101_1010_1010_0101_0101_1010_1010_0101_0101_1010_1010
-    public static let darkSquares: UInt64 = 6172840429334713770
-    /* 0b
-        0101_0101_
-        1010_1010_
-        0101_0101_
-        1010_1010_
-        0101_0101_
-        1010_1010_
-        0101_0101_
-        1010_1010 */
-
-    /// ~darkSquares
-    static let whiteSquares: UInt64 = 12273903644374837845
-
     /// ie. dark squares
-    public static let playableSquares: UInt64 = 6172840429334713770
+    public static var playableSquares: UInt64 {
+        return EightByEightBoard.darkSquares
+    }
 
     /// Default starting position.
     /// Both players have 12 pieces located on the dark squares closest to player's own side.
@@ -183,26 +188,63 @@ public struct GameState: Hashable, Codable, CustomStringConvertible, Identifiabl
         blackTurn: true
     )
 
+    public func pieces(_ selection: CheckersPieceSelector, _ except: CheckersPieceSelector? = nil) -> UInt64 {
+        guard except == nil else {
+            return pieces(selection) & ~pieces(except!)
+        }
+        switch selection {
+        case .All:
+            return self.allPieces
+        case .Black:
+            return self.blackPieces
+        case .White:
+            return whitePieces
+        case .WhiteMen:
+            return whiteMen
+        case .WhiteKings:
+            return whiteKings
+        case .BlackMen:
+            return blackMen
+        case .BlackKings:
+            return blackKings
+        case .Empty:
+            return ~allPieces & GameState.playableSquares        }
+    }
+
+    public func piece(at: Int) -> CheckersPiece? {
+        if (blackMen>>at & 1) == 1 {
+            return CheckersPiece.BlackMan
+        } else if (blackKings>>at & 1) == 1 {
+            return CheckersPiece.BlackKing
+        } else if (whiteKings>>at & 1) == 1 {
+            return CheckersPiece.WhiteKing
+        } else if (whiteMen>>at & 1) == 1 {
+            return CheckersPiece.WhiteMan
+        } else {
+            return nil
+        }
+    }
+
     // A computed property of all black pieces on the board.
-    public var blackPieces: UInt64 {
+    var blackPieces: UInt64 {
         return blackMen | blackKings
     }
 
     // A computed property of all black pieces on the board.
-    public var whitePieces: UInt64 {
+    var whitePieces: UInt64 {
         return whiteMen | whiteKings
     }
 
     // A computed property of all pieces on the board.
-    public var allPieces: UInt64 {
+    var allPieces: UInt64 {
         return whiteMen | whiteKings | blackMen | blackKings
     }
 
     // Wheter the black should make the next turn.
-    public var blackTurn: Bool
+    var blackTurn: Bool
 
     // Wheter the white should make the next turn.
-    public var whiteTurn: Bool {
+    var whiteTurn: Bool {
         get {
             return !blackTurn
         }
@@ -213,7 +255,12 @@ public struct GameState: Hashable, Codable, CustomStringConvertible, Identifiabl
 
     /// The information about who should make the next turn.
     public var turn: CheckersColor {
+        get {
         return self.blackTurn ? CheckersColor.Black : CheckersColor.White
+        }
+        set (value) {
+            self.blackTurn = value == .Black
+        }
     }
 
     /// Contains all legal states the current turn can lead to.
@@ -267,24 +314,24 @@ public struct GameState: Hashable, Codable, CustomStringConvertible, Identifiabl
             guard children.isEmpty else { return children }
 
             // Black Men Move
-            mask = getMoveMask(blackMen & ~GameState.leftEdge, allPieces, CheckersDiff.move.down.left)
+            mask = getMoveMask(blackMen & ~EightByEightBoard.leftEdge, allPieces, CheckersDiff.move.down.left)
             movePieces(.BlackMan, mask, CheckersDiff.move.down.left, &children)
 
-            mask = getMoveMask(blackMen & ~GameState.rightEdge, allPieces, CheckersDiff.move.down.right)
+            mask = getMoveMask(blackMen & ~EightByEightBoard.rightEdge, allPieces, CheckersDiff.move.down.right)
             movePieces(.BlackMan, mask, CheckersDiff.move.down.right, &children)
 
             if blackKings>0 {
                 // Black Kings Move
-                mask=getMoveMask(blackKings & ~GameState.leftEdge, allPieces, CheckersDiff.move.down.left)
+                mask=getMoveMask(blackKings & ~EightByEightBoard.leftEdge, allPieces, CheckersDiff.move.down.left)
                 movePieces(.BlackKing, mask, CheckersDiff.move.down.left, &children)
 
-                mask=getMoveMask(blackKings & ~GameState.rightEdge, allPieces, CheckersDiff.move.down.right)
+                mask=getMoveMask(blackKings & ~EightByEightBoard.rightEdge, allPieces, CheckersDiff.move.down.right)
                 movePieces(.BlackKing, mask, CheckersDiff.move.down.right, &children)
 
-                mask=getMoveMask(blackKings & ~GameState.leftEdge, allPieces, CheckersDiff.move.up.left)
+                mask=getMoveMask(blackKings & ~EightByEightBoard.leftEdge, allPieces, CheckersDiff.move.up.left)
                 movePieces(.BlackKing, mask, CheckersDiff.move.up.left, &children)
 
-                mask=getMoveMask(blackKings & ~GameState.rightEdge, allPieces, CheckersDiff.move.up.right)
+                mask=getMoveMask(blackKings & ~EightByEightBoard.rightEdge, allPieces, CheckersDiff.move.up.right)
                 movePieces(.BlackKing, mask, CheckersDiff.move.up.right, &children)
             }
         } else { // white Turn
@@ -313,27 +360,48 @@ public struct GameState: Hashable, Codable, CustomStringConvertible, Identifiabl
             guard children.isEmpty else { return children }
 
             // White Men Move
-            mask = getMoveMask(whiteMen & ~GameState.leftEdge, allPieces, CheckersDiff.move.up.left)
+            mask = getMoveMask(whiteMen & ~EightByEightBoard.leftEdge, allPieces, CheckersDiff.move.up.left)
             movePieces(.WhiteMan, mask, CheckersDiff.move.up.left, &children)
-            mask = getMoveMask(whiteMen & ~GameState.rightEdge, allPieces, CheckersDiff.move.up.right)
+            mask = getMoveMask(whiteMen & ~EightByEightBoard.rightEdge, allPieces, CheckersDiff.move.up.right)
             movePieces(.WhiteMan, mask, CheckersDiff.move.up.right, &children)
 
             if whiteKings>0 {
                 // White Kings Move
-                mask = getMoveMask(whiteKings & ~GameState.leftEdge, allPieces, CheckersDiff.move.down.left)
+                mask = getMoveMask(whiteKings & ~EightByEightBoard.leftEdge, allPieces, CheckersDiff.move.down.left)
                 movePieces(.WhiteKing, mask, CheckersDiff.move.down.left, &children)
 
-                mask = getMoveMask(whiteKings & ~GameState.rightEdge, allPieces, CheckersDiff.move.down.right)
+                mask = getMoveMask(whiteKings & ~EightByEightBoard.rightEdge, allPieces, CheckersDiff.move.down.right)
                 movePieces(.WhiteKing, mask, CheckersDiff.move.down.right, &children)
 
-                mask = getMoveMask(whiteKings & ~GameState.leftEdge, allPieces, CheckersDiff.move.up.left)
+                mask = getMoveMask(whiteKings & ~EightByEightBoard.leftEdge, allPieces, CheckersDiff.move.up.left)
                 movePieces(.WhiteKing, mask, CheckersDiff.move.up.left, &children)
 
-                mask = getMoveMask(whiteKings & ~GameState.rightEdge, allPieces, CheckersDiff.move.up.right)
+                mask = getMoveMask(whiteKings & ~EightByEightBoard.rightEdge, allPieces, CheckersDiff.move.up.right)
                 movePieces(.WhiteKing, mask, CheckersDiff.move.up.right, &children)
             }
         }
         return children
+    }
+
+    public func number(of: CheckersPieceSelector) -> Int {
+        switch of {
+        case .BlackMen:
+            return blackMen.nonzeroBitCount
+        case .BlackKings:
+            return blackKings.nonzeroBitCount
+        case .WhiteMen:
+            return whiteMen.nonzeroBitCount
+        case .WhiteKings:
+            return whiteKings.nonzeroBitCount
+        case .Black:
+            return blackPieces.nonzeroBitCount
+        case .White:
+            return whitePieces.nonzeroBitCount
+        case .All:
+            return allPieces.nonzeroBitCount
+        case .Empty:
+            return (GameState.playableSquares & ~blackMen & ~whiteMen & ~blackKings & ~whiteKings).nonzeroBitCount
+        }
     }
 
     /// Provides mask of pieces of certain type that can move to certain direction.
@@ -365,7 +433,7 @@ public struct GameState: Hashable, Codable, CustomStringConvertible, Identifiabl
         // move direction is relative to the captured piece, not to the original position
         let (captureDiff, postCaptureDiff) = direction
         return movablePieces &
-            ((capturablePieces & GameState.notEdges)>>captureDiff) & ~((allPieces>>postCaptureDiff)>>captureDiff)
+            ((capturablePieces & EightByEightBoard.notEdges)>>captureDiff) & ~((allPieces>>postCaptureDiff)>>captureDiff)
     }
 
     func capturePieces(
@@ -402,7 +470,7 @@ public struct GameState: Hashable, Codable, CustomStringConvertible, Identifiabl
                 mask: mask,
                 diff: diff
             ) {
-                let bk=blackKings|(blackMen&GameState.whiteEndMask) // new kings
+                let bk=blackKings|(blackMen&EightByEightBoard.whiteEnd) // new kings
                 let bm=blackMen & ~bk
                 out.insert(GameState(
                             blackMen: bm,
@@ -439,7 +507,7 @@ public struct GameState: Hashable, Codable, CustomStringConvertible, Identifiabl
                 mask: mask,
                 diff: diff
             ) {
-                let wk=whiteKings|(whiteMen&GameState.blackEndMask) // new kings
+                let wk=whiteKings|(whiteMen&EightByEightBoard.blackEnd) // new kings
                 let wm=whiteMen & ~wk
                 out.insert(GameState(
                             blackMen: blackMen,
@@ -448,9 +516,6 @@ public struct GameState: Hashable, Codable, CustomStringConvertible, Identifiabl
                             whiteKings: wk,
                             blackTurn: whiteTurn))
             }
-
-        default:
-            break
         }
     }
 
@@ -472,7 +537,7 @@ public struct GameState: Hashable, Codable, CustomStringConvertible, Identifiabl
             }
         case .BlackMan:
             for bm in Move(blackMen, mask, moveDiff) {
-                let bk=blackKings|(bm&GameState.whiteEndMask) // new kings
+                let bk=blackKings|(bm&EightByEightBoard.whiteEnd) // new kings
                 let bm=bm & ~bk
                 out.insert(GameState(
                             blackMen: bm,
@@ -493,7 +558,7 @@ public struct GameState: Hashable, Codable, CustomStringConvertible, Identifiabl
 
         case .WhiteMan:
             for wm in Move(whiteMen, mask, moveDiff) {
-                let wk=whiteKings|(wm&GameState.blackEndMask) // new kings
+                let wk=whiteKings|(wm&EightByEightBoard.blackEnd) // new kings
                 let wm=wm & ~wk
                 out.insert(GameState(
                             blackMen: blackMen,
@@ -502,48 +567,6 @@ public struct GameState: Hashable, Codable, CustomStringConvertible, Identifiabl
                             whiteKings: wk,
                             blackTurn: whiteTurn))
             }
-
-        default:
-            break
-        }
-    }
-
-    public func piece(at: Int) -> CheckersPiece {
-        if (blackMen>>at & 1) == 1 {
-            return CheckersPiece.BlackMan
-        } else if (blackKings>>at & 1) == 1 {
-            return CheckersPiece.BlackKing
-        } else if (whiteKings>>at & 1) == 1 {
-            return CheckersPiece.WhiteKing
-        } else if (whiteMen>>at & 1) == 1 {
-            return CheckersPiece.WhiteMan
-        } else {
-            return CheckersPiece.Empty
-        }
-    }
-
-    private static func bitAt(bitset: Int, pos: Int) -> Bool {
-        return (bitset>>pos & 1) == 1
-    }
-
-    public func number(of: CheckersPieceSelector) -> Int {
-        switch of {
-        case .BlackMen:
-            return blackMen.nonzeroBitCount
-        case .BlackKings:
-            return blackKings.nonzeroBitCount
-        case .WhiteMen:
-            return whiteMen.nonzeroBitCount
-        case .WhiteKings:
-            return whiteKings.nonzeroBitCount
-        case .Black:
-            return blackPieces.nonzeroBitCount
-        case .White:
-            return whitePieces.nonzeroBitCount
-        case .All:
-            return allPieces.nonzeroBitCount
-        case .Empty:
-            return (GameState.playableSquares & ~blackMen & ~whiteMen & ~blackKings & ~whiteKings).nonzeroBitCount
         }
     }
 }

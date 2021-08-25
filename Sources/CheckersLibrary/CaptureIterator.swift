@@ -89,7 +89,7 @@ struct CaptureIterator: IteratorProtocol {
         var foundChainedCaptures: Bool=false
         for (captureDiff, moveDiff) in legalCaptureDiffs {
             let freeSquares = ~(movablePieces|nonCapturablePieces|opponentMen|opponentKings)
-            if freeSquares[pos+captureDiff+moveDiff] && GameState.notEdges[pos+captureDiff] {
+            if freeSquares[pos+captureDiff+moveDiff] && EightByEightBoard.notEdges[pos+captureDiff] {
                 if opponentMen[pos+captureDiff] {
                     foundChainedCaptures=true
                     var newOpponentMen=opponentMen

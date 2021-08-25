@@ -21,7 +21,7 @@ struct RandomUtils {
         var generator = SystemRandomNumberGenerator()
         return getRandomBitsSet(choices, count, using: &generator)
     }
-    public static func getRandomBitsSet<E,T: FixedWidthInteger>(_ choices: T, _ count: Int, using: inout E) -> T where E : RandomNumberGenerator {
+    public static func getRandomBitsSet<E, T: FixedWidthInteger>(_ choices: T, _ count: Int, using: inout E) -> T where E: RandomNumberGenerator {
         guard count>0 && choices != 0 else {
             return 0
         }
@@ -60,7 +60,7 @@ extension GameState {
         blackKings: Int=0,
         whiteKings: Int=0,
         using: inout T
-    ) -> GameState where T : RandomNumberGenerator {
+    ) -> GameState where T: RandomNumberGenerator {
         var state: GameState
         var generator = using
         repeat {
