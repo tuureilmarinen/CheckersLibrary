@@ -9,20 +9,21 @@ import Foundation
 
 /// CheckersDeterministicRandomPlayer makes always a same move from same state of the game if the seed is same.
 public struct CheckersDeterministicRandomPlayer: CheckersPlayer {
+    public static var defaultSeed: Int = 1
     public init() {
-        self.init(seed:self.seed)
+        self.init(seed: CheckersDeterministicRandomPlayer.defaultSeed)
     }
-    
+
     public var name: String {
         return "DeterministicRandom (seed:\(seed))"
     }
-    public var seed: Int = 1
+    public var seed: Int
     private var generator: PseudoRandomNumberGenerator
-    public init(seed:Int = 1) {
+    public init(seed: Int = 1) {
         self.seed=seed
-        generator=PseudoRandomNumberGenerator(seed:seed)
+        generator=PseudoRandomNumberGenerator(seed: seed)
     }
-    
+
     private func arbitarySorter(_ rhs: GameState, _ lhs: GameState) -> Bool {
         var rHasher = Hasher()
         rHasher.combine(rhs)
