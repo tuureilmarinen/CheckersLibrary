@@ -569,4 +569,55 @@ public struct GameState: Hashable, Codable, CustomStringConvertible, Identifiabl
             }
         }
     }
+    func captureDirections(of: CheckersPiece) -> [(Int,Int)] {
+        switch of {
+        case .BlackMan:
+            return []
+        case .BlackKing:
+            return []
+        case .WhiteMan:
+            return []
+        case .WhiteKing:
+            return []
+        }
+    }
+    
+    func enemies(men of: CheckersPiece) -> UInt64 {
+        return (of == .BlackMan || of == .BlackKing) ? pieces(.White) : pieces(.Black)
+    }
+    func enemy(_ type: KingsMen, of:CheckersPiece){
+        
+    }
+    func allies(of: CheckersPiece) -> UInt64 {
+        return of == .BlackMan || of == .BlackKing ? pieces(.Black) : pieces(.White)
+    }
+    func filterEdges() {}
+    
+    /// TODO
+    func capture(_ using: CheckersPiece, _ out: inout Set<GameState>, at: UInt64=UInt64.max, on: EightByEightBoard, directions: (Int,Int)...) {
+        // func genericCapture(movable:UInt64,
+        //let movable=pieces(using) // TODO fix
+        let allied=allies(of: using)
+        //let enemies=enemies( of: using) & EightByEightBoard.notEdges
+        var empty=pieces(.Empty)
+        for (opponent, landing) in directions {
+            
+            
+        }
+        
+    }
+    
+    fileprivate func newStateUsing(
+        blackMen: UInt64? = nil,
+        whiteMen:UInt64? = nil,
+        blackKings:UInt64? = nil,
+        whiteKings: UInt64? = nil) -> GameState {
+        var child=self
+        child.blackMen = blackMen ?? child.blackMen
+        child.blackMen = blackKings ?? child.blackKings
+        child.blackMen = whiteMen ?? child.whiteMen
+        child.blackMen = whiteKings ?? child.whiteKings
+        child.blackTurn = !child.blackTurn
+        return child
+    }
 }
