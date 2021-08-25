@@ -16,6 +16,17 @@ public enum CheckersColor {
     case White
 }
 
+public enum CheckersPieceSelector: Int {
+    case Black = 6
+    case White = 7
+    case WhiteMen = 3
+    case WhiteKings = 4
+    case BlackMen = 1
+    case BlackKings = 2
+    case All = 8
+    case Empty = 5
+}
+
 enum CheckersMoveDiff: Int {
     case DownLeft = 7
     case DownRight = 9
@@ -325,21 +336,6 @@ public struct GameState: Hashable, Codable, CustomStringConvertible, Identifiabl
         return children
     }
 
-    public func number(of: CheckersPiece) -> Int {
-        switch of {
-        case .BlackMan:
-            return blackMen.nonzeroBitCount
-        case .BlackKing:
-            return blackKings.nonzeroBitCount
-        case .WhiteMan:
-            return whiteMen.nonzeroBitCount
-        case .WhiteKing:
-            return whiteKings.nonzeroBitCount
-        case .Empty:
-            return (GameState.playableSquares & ~blackMen & ~whiteMen & ~blackKings & ~whiteKings).nonzeroBitCount
-        }
-    }
-
     /// Provides mask of pieces of certain type that can move to certain direction.
     /// - Parameters:
     ///   - movablePieces: the pieces that are moved. Only one type of pieces can be provided.
@@ -530,4 +526,24 @@ public struct GameState: Hashable, Codable, CustomStringConvertible, Identifiabl
         return (bitset>>pos & 1) == 1
     }
 
+    public func number(of: CheckersPieceSelector) -> Int {
+        switch of {
+        case .BlackMen:
+            return blackMen.nonzeroBitCount
+        case .BlackKings:
+            return blackKings.nonzeroBitCount
+        case .WhiteMen:
+            return whiteMen.nonzeroBitCount
+        case .WhiteKings:
+            return whiteKings.nonzeroBitCount
+        case .Black:
+            return blackPieces.nonzeroBitCount
+        case .White:
+            return whitePieces.nonzeroBitCount
+        case .All:
+            return allPieces.nonzeroBitCount
+        case .Empty:
+            return (GameState.playableSquares & ~blackMen & ~whiteMen & ~blackKings & ~whiteKings).nonzeroBitCount
+        }
+    }
 }

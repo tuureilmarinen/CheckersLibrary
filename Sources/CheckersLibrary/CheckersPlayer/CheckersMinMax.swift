@@ -26,14 +26,17 @@ public class CheckersMinMax: CheckersPlayer {
     /// how many moves deep must evaluation have taken place, in order to accept result from cache, Int.max disables.
     public var cacheDepth = 5
 
-    public var evaluator: MinMaxHeuristicEvaluator.Type = PieceCountRatioEvaluator.self
+    public var evaluator: MinMaxHeuristicEvaluator
 
     public var name: String {
         return "Min-Max with alpha-beta pruning. " +
             "Search dept: \(searchDepth), cache depth: \(cacheDepth)"
     }
 
-    required public init() {}
+    required public init() {
+        //evaluator = PieceCountRatioEvaluator()
+        evaluator = WeightedPieceCountRatioEvaluator()
+    }
 
     /// Provides method to provide move from certain state.
     /// Implements CheckersPlayer protocol
@@ -72,7 +75,7 @@ public class CheckersMinMax: CheckersPlayer {
         depth: Int,
         alpha: Double,
         beta: Double,
-        evaluator: MinMaxHeuristicEvaluator.Type,
+        evaluator: MinMaxHeuristicEvaluator,
         currentDepth: Int=0
     ) -> Double {
         var alpha=alpha
@@ -89,7 +92,7 @@ public class CheckersMinMax: CheckersPlayer {
         else if children.isEmpty {
             return state.blackTurn ? Double.infinity : -Double.infinity
         } else if currentDepth==depth {
-            return PieceCountRatioEvaluator.evaluate(state)
+            return evaluator.evaluate(state)
         }
 
         if state.whiteTurn { // white turn -> maximizing
