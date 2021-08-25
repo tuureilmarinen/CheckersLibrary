@@ -8,7 +8,7 @@
 import Foundation
 
 public protocol CheckersPlayer {
-    func provideMove(_ state: GameState) -> GameState?
+    mutating func provideMove(_ state: GameState) -> GameState?
     var name: String {get}
     init()
 }

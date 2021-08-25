@@ -9,12 +9,20 @@ import Foundation
 
 /// CheckersDeterministicRandomPlayer makes always a same move from same state of the game if the seed is same.
 public struct CheckersDeterministicRandomPlayer: CheckersPlayer {
+    public init() {
+        self.init(seed:self.seed)
+    }
+    
     public var name: String {
         return "DeterministicRandom (seed:\(seed))"
     }
-    public var seed: UInt64 = 1
-    public init() {}
-
+    public var seed: Int = 1
+    private var generator: PseudoRandomNumberGenerator
+    public init(seed:Int = 1) {
+        self.seed=seed
+        generator=PseudoRandomNumberGenerator(seed:seed)
+    }
+    
     private func arbitarySorter(_ rhs: GameState, _ lhs: GameState) -> Bool {
         var rHasher = Hasher()
         rHasher.combine(rhs)
@@ -24,20 +32,12 @@ public struct CheckersDeterministicRandomPlayer: CheckersPlayer {
         let lHash = lHasher.finalize()
         return rHash<lHash
     }
-    public func provideMove(_ state: GameState) -> GameState? {
+    public mutating func provideMove(_ state: GameState) -> GameState? {
         let options=state.children
         if options.isEmpty {
             return nil
         }
         let sorted=Array(options).sorted(by: arbitarySorter)
-        let distance=UInt64(sorted.distance(from: sorted.startIndex, to: sorted.endIndex))
-        let bitsJustCrammedTogether=state.blackMen ^
-            state.blackMen.byteSwapped ^
-            state.blackKings.byteSwapped ^
-            state.whiteMen.byteSwapped ^
-            state.whiteKings.byteSwapped /
-            seed
-        let selectedIndex = Int((state.blackTurn ? bitsJustCrammedTogether : ~bitsJustCrammedTogether)%distance)
-        return sorted[selectedIndex]
+        return sorted.randomElement(using: &generator)
     }
 }

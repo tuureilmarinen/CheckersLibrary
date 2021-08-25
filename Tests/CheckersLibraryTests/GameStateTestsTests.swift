@@ -57,7 +57,7 @@ final class GameStateTestsTests: XCTestCase {
             let children = state.children
             guard !children.isEmpty else { break }
             state=player.provideMove(state)!
-            XCTAssertEqual(state.allPieces & ~GameState.darkSquares, UInt64(0))
+            XCTAssertEqual(state.allPieces & ~GameState.playableSquares, UInt64(0))
         }
         XCTAssertEqual(CheckersUtils.getSetBitIndexes(UInt64(0b101)), [0, 2])
     }
@@ -78,7 +78,7 @@ final class GameStateTestsTests: XCTestCase {
                 newState!.whiteMen ^ newState!.whiteKings ^ newState!.blackMen ^ newState!.blackKings,
                 "Pieces should not overlap" +
                     CheckersUtils.encode(dump: state) + " -> " + CheckersUtils.encode(dump: newState!))
-            XCTAssertEqual(newState!.allPieces & (~GameState.darkSquares),
+            XCTAssertEqual(newState!.allPieces & (~GameState.playableSquares),
                            UInt64(0),
                            "Pieces should stay in playable squares." +
                             CheckersUtils.encode(dump: state) + " -> " + CheckersUtils.encode(dump: newState!))

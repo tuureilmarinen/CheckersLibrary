@@ -12,12 +12,9 @@ import XCTest
 final class CheckersDeterministicRandomPlayerTests: XCTestCase {
 
     func testSameStatesWithSameSeedGetsSameMove() {
-        var sameseedA=CheckersDeterministicRandomPlayer()
-        var sameseedB=CheckersDeterministicRandomPlayer()
-        var differentSeed=CheckersDeterministicRandomPlayer()
-        differentSeed.seed=10290569611181436143
-        sameseedA.seed=9001
-        sameseedB.seed=sameseedA.seed
+        var sameseedA=CheckersDeterministicRandomPlayer(seed:609)
+        var sameseedB=CheckersDeterministicRandomPlayer(seed:609)
+        var differentSeed=CheckersDeterministicRandomPlayer(seed:420)
         var gameState = GameState.defaultStart
         var equalResultCounter=0
         var totalCounter=0

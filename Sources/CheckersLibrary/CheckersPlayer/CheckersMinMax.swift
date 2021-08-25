@@ -34,7 +34,6 @@ public class CheckersMinMax: CheckersPlayer {
     }
 
     required public init() {
-        //evaluator = PieceCountRatioEvaluator()
         evaluator = WeightedPieceCountRatioEvaluator()
     }
 

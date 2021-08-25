@@ -57,48 +57,6 @@ public enum CheckersUtils {
         return setBitIndexes
     }
 
-    public static func getRandomBitsSet<T: FixedWidthInteger>(_ choices: T, _ count: Int) -> T {
-        guard count>0 && choices != 0 else {
-            return 0
-        }
-        var tmp=choices
-        for _ in 0..<T.random(in: 0..<T(choices.nonzeroBitCount)) {
-            tmp^=T(1)<<tmp.trailingZeroBitCount
-
-        }
-        let selection = T(1)<<tmp.trailingZeroBitCount
-
-        return selection | getRandomBitsSet(choices^selection, count-1)
-    }
-
-    public static func getRandomGameState(
-        turn: CheckersColor?=nil,
-        blackMen: Int=0,
-        whiteMen: Int=0,
-        blackKings: Int=0,
-        whiteKings: Int=0
-    ) -> GameState {
-        var state: GameState
-        repeat {
-            var unoccupied: UInt64=GameState.playableSquares
-            let blackMen=getRandomBitsSet(unoccupied, blackMen)
-            unoccupied &= ~blackMen
-            let blackKings=getRandomBitsSet(unoccupied, blackKings)
-            unoccupied &= ~blackKings
-            let whiteKings=getRandomBitsSet(unoccupied, whiteKings)
-            unoccupied &= ~whiteKings
-            let whiteMen=getRandomBitsSet(unoccupied, whiteMen)
-            let isBlackTurn = (turn == nil ? Bool.random() : turn! == .Black)
-            state = GameState(
-                blackMen: blackMen,
-                blackKings: blackKings,
-                whiteMen: whiteMen,
-                whiteKings: whiteKings,
-                blackTurn: isBlackTurn)
-        } while !state.valid
-        return state
-    }
-
     public static func encode(dump: GameState) -> String {
         var tmp = Array(repeating: 0, count: 64)
         for at in 0...63 {
