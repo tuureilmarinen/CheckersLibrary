@@ -10,13 +10,13 @@ import Foundation
 /// CheckersDeterministicRandomPlayer makes always a same move from same state of the game if the seed is same.
 public struct CheckersDeterministicRandomPlayer: CheckersPlayer {
     public init() {
-        self.init(seed: self.seed)
+        self.init(seed: 1)
     }
 
     public var name: String {
         return "DeterministicRandom (seed:\(seed))"
     }
-    public var seed: Int = 1
+    public var seed: Int
     private var generator: PseudoRandomNumberGenerator
     public init(seed: Int = 1) {
         self.seed=seed
