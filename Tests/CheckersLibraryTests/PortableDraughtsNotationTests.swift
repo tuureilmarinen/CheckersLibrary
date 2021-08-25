@@ -24,10 +24,10 @@ final class PortableDraughtsNotationTests: XCTestCase {
 
     /// Tests if state of the board is parsed correctly from FEN-string.
     func testFentoState() {
-        XCTAssertEqual(PortableDraughtsNotation.PDNfenToGameState(fenA), gameStateA)
+        XCTAssertEqual(PortableDraughtsNotation.decode(fenA), gameStateA)
         XCTAssertEqual(
             gamestateB,
-            PortableDraughtsNotation.PDNfenToGameState(
+            PortableDraughtsNotation.decode(
                 "B:WK16,25,26,27,28,29,30,31,32:B1,2,3,4,5,6,7,8,9,13,14,15,K18"))
     }
     /// Tests if state of the board is encoded correctly into FEN-string.

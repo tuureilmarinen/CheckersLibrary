@@ -18,7 +18,7 @@ public enum PortableDraughtsNotation {
         return 2*(pdnSquareNumber-1)+(((pdnSquareNumber-1)/4).isMultiple(of: 2) ? 1 : 0)
     }
 
-    public static func stateToFen(_ state: GameState) -> String {
+    public static func encode(_ state: GameState) -> String {
         var whites: [String]=[]
         var blacks: [String]=[]
         for boardIndex in 0...63 {
@@ -38,7 +38,7 @@ public enum PortableDraughtsNotation {
         return (state.blackTurn ? "B" : "W")+":W"+(whites.joined(separator: ","))+":B"+(blacks.joined(separator: ","))
 
     }
-    public static func PDNfenToGameState(_ fen: String?) -> GameState? {
+    public static func decode(_ fen: String?) -> GameState? {
         guard fen != nil else { return nil }
         let fen = fen!
         func bitboards(_ pdnString: String) -> (UInt64, UInt64) {

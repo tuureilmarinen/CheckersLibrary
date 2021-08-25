@@ -113,14 +113,14 @@ final class GameStateTestsTests: XCTestCase {
             XCTAssertEqual(child.number(of: .BlackMan), 1)
             XCTAssertEqual(child.number(of: .BlackKing), 1)
         }
-        state=PortableDraughtsNotation.PDNfenToGameState("W:W5,10:B6,8")
+        state=PortableDraughtsNotation.decode("W:W5,10:B6,8")
         state=CheckersUtils.decode(dump: "0000000040100010000400000000000000000000000000000000000000000000W")!
         for child in state!.children {
             XCTAssertEqual(
                 CheckersUtils.decode(dump: "0800000040000010000000000000000000000000000000000000000000000000B"),
                 child)
         }
-        state=PortableDraughtsNotation.PDNfenToGameState("B:W25,29:B21,K22")
+        state=PortableDraughtsNotation.decode("B:W25,29:B21,K22")
         state=CheckersUtils.decode(dump: "0000000000000000000000000000000000000000102000000400000040000000B")
         for child in state!.children {
             XCTAssertEqual(child,

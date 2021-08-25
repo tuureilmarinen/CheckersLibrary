@@ -7,16 +7,16 @@
 
 import Foundation
 
-struct PseudoRandomNumberGenerator: RandomNumberGenerator {
-    init(seed: Int) {
+public struct PseudoRandomNumberGenerator: RandomNumberGenerator {
+    public init(seed: Int) {
         srand48(seed)
         }
-    func next() -> UInt64 {
+    public func next() -> UInt64 {
         return UInt64(drand48() * Double(UInt64.max))
     }
 }
 
-struct RandomUtils {
+public struct RandomUtils {
     public static func getRandomBitsSet<T: FixedWidthInteger>(_ choices: T, _ count: Int) -> T {
         var generator = SystemRandomNumberGenerator()
         return getRandomBitsSet(choices, count, using: &generator)

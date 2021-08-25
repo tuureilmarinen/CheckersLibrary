@@ -13,6 +13,7 @@ public protocol MinMaxHeuristicEvaluator {
 
 /// Provides heuristic function for the CheckersMinMax by comparing ratios of pieces on the board.
 public struct PieceCountRatioEvaluator: MinMaxHeuristicEvaluator {
+    public init(){}
     /// It compares ratio of pieces on the board.
     /// Number of white pieces is divided by number of black pieces,
     /// or number of black pieces divided by white pieces multiplied by -1
@@ -21,7 +22,7 @@ public struct PieceCountRatioEvaluator: MinMaxHeuristicEvaluator {
     /// - Parameter state: GameState to be evaluated.
     /// - Returns: Positive value if situation if favorable for the white player, negative if it is not.
     public func evaluate(_ state: GameState) -> Double {
-        let returnValue = Double(state.whitePieces.nonzeroBitCount)/Double(state.blackPieces.nonzeroBitCount)
+        let returnValue = Double(state.whitePieces.nonzeroBitCount)/Double(state.blackPieces.nonzeroBitCount)-1
         return returnValue > 1 ? returnValue : (1.0/returnValue) * -1
     }
 }
@@ -35,12 +36,12 @@ public struct WeightedPieceCountRatioEvaluator: MinMaxHeuristicEvaluator {
     var remainingMenWeight: Double
     var remainingKingsWeight: Double
 
-    public init(piece: Double=24, king: Double=2, turn: Double=1, men: Double = .infinity, kings: Double = .infinity) {
+    public init(piece: Double=24, king: Double=2, turn: Double=1, remainingMen: Double = .infinity, remainingKings: Double = .infinity) {
         kingWeight=king
         pieceWeight=piece
         turnWeight=turn
-        remainingMenWeight=men
-        remainingKingsWeight=kings
+        remainingMenWeight=remainingMen
+        remainingKingsWeight=remainingKings
     }
 
     public func evaluate(_ state: GameState) -> Double {
