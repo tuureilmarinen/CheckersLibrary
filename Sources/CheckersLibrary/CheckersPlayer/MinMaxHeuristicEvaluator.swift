@@ -37,8 +37,8 @@ public struct WeightedPieceCountRatioEvaluator: MinMaxHeuristicEvaluator {
     public var remainingKings: Double
 
     public init(piece: Double=24, king: Double=2, turn: Double=1, remainingMen: Double = .infinity, remainingKings: Double = .infinity) {
-        self.kingWeight=king
-        self.pieceWeight=piece
+        self.king=king
+        self.piece=piece
         self.turn=turn
         self.remainingMen=remainingMen
         self.remainingKings=remainingKings
