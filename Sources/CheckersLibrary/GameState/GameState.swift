@@ -210,10 +210,7 @@ public struct GameState: Hashable, Codable, CustomStringConvertible, Identifiabl
                     land: Direction(.Up(1), .Right(1))
                 )
             ]
-        case .BlackKing:
-            fallthrough
-
-        case .WhiteKing:
+        case .BlackKing, .WhiteKing:
             return [
                 CaptureDirection(
                     capture: Direction(.Down(1), .Left(1)),
@@ -294,7 +291,8 @@ public struct GameState: Hashable, Codable, CustomStringConvertible, Identifiabl
             let movingPieces = landedBoard.move(back: pieces, direction.capture+direction.land).pieces(pieces)
 
             for i in movingPieces.indexes {
-                let newBoard = board.move(.At([i]), direction.capture+direction.land).remove(at: direction.capture, from: PieceSet([i]))
+                let newBoard = board.move(.At([i]), direction.capture+direction.land)
+                    .remove(at: direction.capture, from: PieceSet([i]))
 
                 let chained = GameState.capture(
                     enemySelector,

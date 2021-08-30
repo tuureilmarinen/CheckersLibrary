@@ -41,12 +41,23 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
     /// The provideMove-method should always return a position that is one move away from the state
     /// ie. it does not return illegal moves.
     func testProvidesLegalMove() {
-        let totalGames = 20
+        let startStates = [
+            "B:W21,22,23,24,25,26,27,28,29,30,31,32:B1,2,3,4,5,6,7,8,9,10,11,12",
+            "W:W6,10,K13,16,17,21,25,26,K29,32:BK9,20,22,K24,28",
+            "B:WK2,K7,K8,K15,K17,K20,K22,K27,K28,K32:B1,K3,6,11,12,K13,14,16,K23,K30,K31",
+            "B:W7,K9,10,12,18,19,K21,27,28,29,32:B1,2,4,5,8,13,14,16,20,22,23,24",
+            "W:W5,6,8,9,11,15,21,22,24,28,29,32:B1,2,10,13,16,17,19,20,23,25,26,27",
+            "W:WK3,K4,K14,K21,K24,K28,K29,30,K31,K32:BK1,7,K9,10,11,12,13,18,20,K25,K27",
+            "B:WK8,10,20,22,23,K24,26,30:B2,3,K6,K7,K9,K12,K14,16,17,18,K19,25"
+        ].map {
+            // swiftlint:disable:next force_try
+            try! GameState.init(fen: $0)
+        }
         let maxMovesPerGame = 50
-        for _ in 0..<totalGames {
+        for startState in startStates {
             let minmax=CheckersMinMax()
-            var state: GameState?=GameState.defaultStart
-            var previousState=GameState.defaultStart
+            var state: GameState?=startState
+            var previousState=startState
             var children: Set<GameState>
             for _ in 0...maxMovesPerGame {
                 children=state!.children

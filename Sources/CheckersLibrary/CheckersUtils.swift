@@ -26,8 +26,12 @@ public enum CheckersUtils {
 
     public static func getMove(_ previousState: GameState, _ newState: GameState) -> CheckersMove {
         let (prev, curr, opp) = newState.blackTurn ?
-            (previousState.board.whitePieces, newState.board.whitePieces, previousState.board.blackPieces^newState.board.blackPieces) :
-            (previousState.board.blackPieces, newState.board.blackPieces, previousState.board.whitePieces^newState.board.whitePieces)
+            (previousState.board.whitePieces,
+             newState.board.whitePieces,
+             previousState.board.blackPieces^newState.board.blackPieces) :
+            (previousState.board.blackPieces,
+             newState.board.blackPieces,
+             previousState.board.whitePieces^newState.board.whitePieces)
         let from = ((prev^curr)&prev).pieces.trailingZeroBitCount
         let to = ((prev^curr)&curr).pieces.trailingZeroBitCount
         return CheckersMove(

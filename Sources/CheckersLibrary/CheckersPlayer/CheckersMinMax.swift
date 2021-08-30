@@ -59,6 +59,8 @@ public class CheckersMinMax: CheckersPlayer {
         return optimalKnownMove[state]
     }
 
+    // swiftlint:disable cyclomatic_complexity function_body_length
+
     /// Minimax algorithm with alpha-beta-pruning.
     ///  Search depth is limited by depth parameter.
     ///  Fail-soft.
@@ -142,4 +144,5 @@ public class CheckersMinMax: CheckersPlayer {
             return smallestFoundValue
         }
     }
+    // swiftlint:enable cyclomatic_complexity function_body_length
 }

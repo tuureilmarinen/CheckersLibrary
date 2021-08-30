@@ -74,8 +74,12 @@ final class GameStateTestsTests: XCTestCase {
             whiteKings: 0b0100_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0001_0000_0000_0000,
             blackTurn: false
         )
-        XCTAssertEqual(stateA.encode(to: String.self), "0101010110101010010101010000000000000000404040400404040440404040B")
-        XCTAssertEqual(stateB.encode(to: String.self), "0201010040008000020000044040400001040104402040200000000400000080W")
+        XCTAssertEqual(
+            stateA.encode(to: String.self),
+            "0101010110101010010101010000000000000000404040400404040440404040B")
+        XCTAssertEqual(
+            stateB.encode(to: String.self),
+            "0201010040008000020000044040400001040104402040200000000400000080W")
     }
 
     func testDecode() {
@@ -172,11 +176,13 @@ final class GameStateTestsTests: XCTestCase {
         for _ in 0..<100 {
             newState=player.provideMove(state)
             guard newState != nil else { break }
+            // swiftlint:disable line_length
             XCTAssertEqual(
                 newState!.board.whiteMen.pieces | newState!.board.whiteKings.pieces | newState!.board.blackMen.pieces | newState!.board.blackKings.pieces,
                 newState!.board.whiteMen.pieces ^ newState!.board.whiteKings.pieces ^ newState!.board.blackMen.pieces ^ newState!.board.blackKings.pieces,
                 "Pieces should not overlap" +
                     CheckersUtils.encode(dump: state) + " -> " + CheckersUtils.encode(dump: newState!))
+            // swiftlint:enable line_length
             XCTAssertEqual(newState!.board & GameState.playableSquares,
                            newState!.board,
                            "Pieces should stay in playable squares." +
