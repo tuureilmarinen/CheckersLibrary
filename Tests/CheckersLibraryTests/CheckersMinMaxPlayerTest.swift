@@ -38,17 +38,6 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
             "Player should not lose more than 20% of games against a player making random moves.")
     }
 
-    /// TODO
-    /// Test that beta-cutoff actually occurs and does not occur when it should not.
-    func testAlphaCutoff() {
-
-    }
-    /// TODO
-    /// Test that beta-cutoff actually occurs and does not occur when it should not.
-    func testBetaCutoff() {
-
-    }
-
     /// The provideMove-method should always return a position that is one move away from the state
     /// ie. it does not return illegal moves.
     func testProvidesLegalMove() {
@@ -84,8 +73,7 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
         let newState=minmax.provideMove(state!)!
         XCTAssertEqual(minmax.guessDepth[state!], minmax.searchDepth)
         state=newState
-        XCTAssertGreaterThanOrEqual(minmax.knownValues.count, 500)
-
+        XCTAssertGreaterThanOrEqual(minmax.knownValues.count, 100)
         for _ in 0...10 {
             XCTAssertEqual(minmax.provideMove(state!), minmax.optimalKnownMove[state!]!)
             state=minmax.provideMove(state!)
@@ -135,8 +123,13 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
 
     /// Tests wheter player wins from state from which it can force win.
     func testMinMaxWinsIfWinCanForcedInSearchDepth() {
-        let whiteCanForceWinInFourTurns = PortableDraughtsNotation.PDNfenToGameState(
-            "W:BK2:WK10,K22,K23")
+        let whiteCanForceWinInFourTurns = GameState(
+            blackMen: 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000,
+            blackKings: 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1000,
+            whiteMen: 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000,
+            whiteKings: 0b0000_0000_0000_0000_0001_0100_0000_0000_0000_0000_0000_1000_0000_0000_0000_0000,
+            blackTurn: false
+        )
         let black=CheckersMinMax()
         let white=black
         var blackMove: GameState? = whiteCanForceWinInFourTurns
@@ -146,11 +139,12 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
             XCTAssertNotNil(
                 whiteMove,
                 "White player should not lose from a state from which it can force win within searchdepth.")
+            guard whiteMove != nil else { break }
             blackMove = black.provideMove(whiteMove!)
             guard blackMove != nil else { break }
         }
         XCTAssertNil(blackMove, "Black player should lose if white player can force win.")
-        let blackCanForceWinInFourTurns = PortableDraughtsNotation.PDNfenToGameState(
+        let blackCanForceWinInFourTurns = PortableDraughtsNotation.decode(
             "B:BK10,K22,K23:WK2")
         whiteMove = blackCanForceWinInFourTurns
         for _ in 0...15 {
@@ -158,10 +152,53 @@ final class CheckersMinMaxPlayerTests: XCTestCase {
             XCTAssertNotNil(
                 blackMove,
                 "Black player should not lose from a state from which it can force win within searchdepth.")
+            guard blackMove != nil else { break }
             whiteMove = white.provideMove(blackMove!)
             guard whiteMove != nil else { break }
         }
         XCTAssertNil(whiteMove, "White player should lose if black player can force win.")
+    }
+    func testPerformanceProvideMove5() throws {
+        let minMax = CheckersMinMax()
+        minMax.searchDepth=5
+        self.measure {
+            _ = minMax.provideMove(GameState.defaultStart)
+        }
+    }
+    func testPerformanceProvideMove7() throws {
+        let minMax = CheckersMinMax()
+        minMax.searchDepth=7
+        self.measure {
+            _ = minMax.provideMove(GameState.defaultStart)
+        }
+    }
+    func testPerformanceProvideMove9() throws {
+        let minMax = CheckersMinMax()
+        minMax.searchDepth=9
+        self.measure {
+            _ = minMax.provideMove(GameState.defaultStart)
+        }
+    }
+    func testPerformanceProvideMove11() throws {
+        let minMax = CheckersMinMax()
+        minMax.searchDepth=11
+        self.measure {
+            _ = minMax.provideMove(GameState.defaultStart)
+        }
+    }
+    func testPerformanceProvideMove13() throws {
+        let minMax = CheckersMinMax()
+        minMax.searchDepth=13
+        self.measure {
+            _ = minMax.provideMove(GameState.defaultStart)
+        }
+    }
+    func testPerformanceProvideMove15() throws {
+        let minMax = CheckersMinMax()
+        minMax.searchDepth=15
+        self.measure {
+            _ = minMax.provideMove(GameState.defaultStart)
+        }
     }
 
     static var allTests = [

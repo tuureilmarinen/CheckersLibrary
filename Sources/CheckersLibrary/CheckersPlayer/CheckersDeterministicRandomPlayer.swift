@@ -9,8 +9,9 @@ import Foundation
 
 /// CheckersDeterministicRandomPlayer makes always a same move from same state of the game if the seed is same.
 public struct CheckersDeterministicRandomPlayer: CheckersPlayer {
+    public static var defaultSeed: Int = 1
     public init() {
-        self.init(seed: 1)
+        self.init(seed: CheckersDeterministicRandomPlayer.defaultSeed)
     }
 
     public var name: String {

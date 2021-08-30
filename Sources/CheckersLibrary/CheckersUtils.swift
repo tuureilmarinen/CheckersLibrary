@@ -17,16 +17,23 @@ public struct CheckersMove {
 
 public enum CheckersUtils {
 
+    public static func encode(dump state: GameState) -> String {
+        return state.encode(to: String.self)
+    }
+    public static func decode(dump: String) -> GameState? {
+        return try? GameState.init(dump: dump)
+    }
+
     public static func getMove(_ previousState: GameState, _ newState: GameState) -> CheckersMove {
         let (prev, curr, opp) = newState.blackTurn ?
-            (previousState.whitePieces, newState.whitePieces, previousState.blackPieces^newState.blackPieces) :
-            (previousState.blackPieces, newState.blackPieces, previousState.whitePieces^newState.whitePieces)
-        let from = ((prev^curr)&prev).trailingZeroBitCount
-        let to = ((prev^curr)&curr).trailingZeroBitCount
+            (previousState.board.whitePieces, newState.board.whitePieces, previousState.board.blackPieces^newState.board.blackPieces) :
+            (previousState.board.blackPieces, newState.board.blackPieces, previousState.board.whitePieces^newState.board.whitePieces)
+        let from = ((prev^curr)&prev).pieces.trailingZeroBitCount
+        let to = ((prev^curr)&curr).pieces.trailingZeroBitCount
         return CheckersMove(
             from: from,
             to: to,
-            captured: getSetBitIndexes(opp),
+            captured: opp.indexes,
             previous: previousState,
             next: newState)
     }
@@ -56,26 +63,35 @@ public enum CheckersUtils {
         }
         return setBitIndexes
     }
+}
 
-    public static func encode(dump: GameState) -> String {
+extension EightByEightBoard {
+    enum DecodeArgumentError: Error {
+        case invalidLength(dumpLength: Int)
+        case invalidCharacter
+        case invalidArgument
+    }
+    public func encode(to: String.Type) -> String {
         var tmp = Array(repeating: 0, count: 64)
         for at in 0...63 {
-            if (dump.blackMen>>at & 1) == 1 {
+            if (self.blackMen.pieces>>at) & UInt64(1) == 1 {
                 tmp[at]+=1
             }
-            if (dump.blackKings>>at & 1) == 1 {
+            if (self.blackKings.pieces>>at) & UInt64(1) == 1 {
                 tmp[at]+=2            }
-            if (dump.whiteMen>>at & 1) == 1 {
+            if (self.whiteMen.pieces>>at) & UInt64(1) == 1 {
                 tmp[at]+=4            }
-            if (dump.whiteKings>>at & 1) == 1 {
+            if (self.whiteKings.pieces>>at) & UInt64(1) == 1 {
                 tmp[at]+=8            }
         }
-        return tmp.map { String(format: "%X", $0) } .joined() + (dump.blackTurn ? "B":"W")
+        return tmp.map { String(format: "%X", $0) } .joined()
     }
-    public static func decode(dump: String?) -> GameState? {
-        guard dump != nil else { return nil }
-        let a=Array(dump!)
-        guard a.count==65 else { return nil }
+    public init(dump: String) throws {
+        let a=Array(dump)
+        guard a.count==64 else { throw DecodeArgumentError.invalidLength(dumpLength: a.count) }
+        /*guard a.allSatisfy({
+            ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"].contains($0)
+        }) else { throw DecodeArgumentError.invalidCharacter }*/
         var bm: UInt64=0
         var bk: UInt64=0
         var wm: UInt64=0
@@ -103,7 +119,23 @@ public enum CheckersUtils {
             }
 
         }
-        let bt = a[64]=="B" ? true : false
-        return GameState(blackMen: bm, blackKings: bk, whiteMen: wm, whiteKings: wk, blackTurn: bt)
+        self.init(blackMen: bm, blackKings: bk, whiteMen: wm, whiteKings: wk)
+    }
+}
+
+extension GameState {
+    public func encode(to: String.Type) -> String {
+        return self.board.encode(to: String.self) + (self.blackTurn ? "B":"W")
+    }
+
+    public init(dump: String) throws {
+        guard dump.count == 65 else { throw GameStateDecodeArgumentError.invalidArgument }
+        let board = try? EightByEightBoard(dump: String(dump.dropLast(1)))
+        guard board != nil else { throw GameStateDecodeArgumentError.invalidArgument }
+
+        self.init(
+            board: board!,
+            turn: dump.dropFirst(64)=="B" ? .Black : .White
+        )
     }
 }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Move: Sequence {
+/*struct Move: Sequence {
     let piecesToMove: UInt64
     let mask: UInt64
     let diff: CheckersMoveDiff
@@ -51,4 +51,4 @@ struct MoveIterator: IteratorProtocol {
 
         return (piecesToMove|to)&(~from)
     }
-}
+}*/
