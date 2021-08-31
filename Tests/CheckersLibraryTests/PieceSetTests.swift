@@ -22,6 +22,7 @@ class PieceSetTests: XCTestCase {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
         XCTAssertEqual(PieceSet(0b101010).indexes, [1, 3, 5])
+        XCTAssertEqual(PieceSet(0b100101010).indexes, [1, 3, 5, 8])
     }
 
     func testPerformanceExample() throws {

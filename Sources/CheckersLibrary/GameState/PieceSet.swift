@@ -27,7 +27,7 @@ public struct PieceSet: Equatable, Hashable, Codable, Identifiable {
     }
 
     public func and(not: PieceSet) -> PieceSet {
-        return PieceSet(pieces & ~not.pieces)
+        return PieceSet(pieces & (~not.pieces))
     }
 
     public func and(_ and: PieceSet) -> PieceSet {

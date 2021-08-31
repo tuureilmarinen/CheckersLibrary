@@ -90,9 +90,7 @@ public class CheckersMinMax: CheckersPlayer {
             }
         }
         // White win = max, black win =min
-        else if children.isEmpty {
-            return state.blackTurn ? Double.infinity : -Double.infinity
-        } else if currentDepth==depth {
+        else if children.isEmpty || currentDepth==depth {
             return evaluator.evaluate(state)
         }
 

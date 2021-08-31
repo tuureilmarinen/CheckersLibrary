@@ -23,6 +23,9 @@ public struct PieceCountRatioEvaluator: MinMaxHeuristicEvaluator {
     /// - Returns: Positive value if situation if favorable for the white player, negative if it is not.
     public func evaluate(_ state: GameState) -> Double {
         let returnValue = (Double(state.number(of: .White))/Double(state.number(of: .Black)))-1
+        if returnValue == 0 {
+            return 0
+        }
         return returnValue > 1 ? returnValue : (1.0/returnValue) * -1
     }
 }

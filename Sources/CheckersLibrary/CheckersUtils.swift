@@ -24,22 +24,17 @@ public enum CheckersUtils {
         return try? GameState.init(dump: dump)
     }
 
-    public static func getMove(_ previousState: GameState, _ newState: GameState) -> CheckersMove {
-        let (prev, curr, opp) = newState.blackTurn ?
-            (previousState.board.whitePieces,
-             newState.board.whitePieces,
-             previousState.board.blackPieces^newState.board.blackPieces) :
-            (previousState.board.blackPieces,
-             newState.board.blackPieces,
-             previousState.board.whitePieces^newState.board.whitePieces)
-        let from = ((prev^curr)&prev).pieces.trailingZeroBitCount
-        let to = ((prev^curr)&curr).pieces.trailingZeroBitCount
+    public static func getMove(_ first: GameState, _ second: GameState) -> CheckersMove {
+        let missingFromSecond = first.pieces(first.turn.selector()).and(not: second.pieces(first.turn.selector()))
+        let missingFromFirst = second.pieces(first.turn.selector()).and(not: first.pieces(first.turn.selector()))
+        let captured = first.pieces(first.turn.flip().selector()).and(not: second.pieces(first.turn.flip().selector()))
+
         return CheckersMove(
-            from: from,
-            to: to,
-            captured: opp.indexes,
-            previous: previousState,
-            next: newState)
+            from: missingFromSecond.indexes.first ?? 0,
+            to: missingFromFirst.indexes.first ?? 0,
+            captured: captured.indexes,
+            previous: first,
+            next: second)
     }
 
     public static func getMoves(_ state: GameState) -> [Int: [CheckersMove]] {
