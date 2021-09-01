@@ -90,14 +90,17 @@ public class CheckersMinMax: CheckersPlayer {
             }
         }
         // White win = max, black win =min
-        else if children.isEmpty || currentDepth==depth {
+        else if children.isEmpty {
+            return state.blackTurn ? Double.infinity : -Double.infinity
+        } else if currentDepth==depth {
             return evaluator.evaluate(state)
         }
 
         if state.whiteTurn { // white turn -> maximizing
             var highestFoundValue = -Double.infinity
             var highestChild: GameState = children.first!
-            for child in children {
+            let childrenInDescOrder = children.sorted(by: {evaluator.evaluate($0)>evaluator.evaluate($1)})
+            for child in childrenInDescOrder {
                 let childValue = minMaxWithAlphaBeta(
                     state: child,
                     depth: depth,
@@ -120,7 +123,8 @@ public class CheckersMinMax: CheckersPlayer {
         } else { // black turn -> minimizing
             var smallestFoundValue = Double.infinity
             var smallestChild: GameState=children.first!
-            for child in children {
+            let childrenInAscOrder = children.sorted(by: {evaluator.evaluate($0)<evaluator.evaluate($1)})
+            for child in childrenInAscOrder {
                 let childValue = minMaxWithAlphaBeta(
                     state: child,
                     depth: depth,

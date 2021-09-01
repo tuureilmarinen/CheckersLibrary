@@ -7,7 +7,9 @@
 
 import Foundation
 
-public struct CheckersMove {
+public struct CheckersMove: Identifiable, Hashable, Codable {
+    public var id: UUID { return UUID() }
+
     public let from: Int
     public let to: Int
     public let captured: [Int]
